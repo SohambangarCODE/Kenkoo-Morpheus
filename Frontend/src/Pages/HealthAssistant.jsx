@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import useVoiceInput from "../hooks/useVoiceInput";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
 import {
   Bot, Sparkles, Mic, MicOff, Send, Brain, Activity,
   Heart, Thermometer, Stethoscope, Clock, Star,
@@ -848,6 +847,74 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
       }
     };
 
+    // ─── Manual table drawer (replaces autoTable) ───
+    const drawTable = ({ headers, rows, headerColor = [20, 71, 230], colWidths, startY }) => {
+      const tableWidth = pageWidth - margin * 2;
+      const cellPadding = 3;
+      const headerFontSize = 9;
+      const bodyFontSize = 8;
+      const numCols = headers.length;
+
+      // Calculate column widths
+      const widths = colWidths || headers.map(() => tableWidth / numCols);
+
+      // Draw header row
+      let curY = startY || y;
+      doc.setFillColor(headerColor[0], headerColor[1], headerColor[2]);
+      doc.rect(margin, curY, tableWidth, 8, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(headerFontSize);
+      doc.setFont("helvetica", "bold");
+      let curX = margin;
+      headers.forEach((h, i) => {
+        doc.text(h, curX + cellPadding, curY + 5.5);
+        curX += widths[i];
+      });
+      curY += 8;
+
+      // Draw body rows
+      doc.setFontSize(bodyFontSize);
+      doc.setFont("helvetica", "normal");
+      rows.forEach((row, rowIdx) => {
+        // Calculate row height based on text wrapping
+        let maxLines = 1;
+        const cellTexts = row.map((cell, colIdx) => {
+          const text = String(cell || "-");
+          const lines = doc.splitTextToSize(text, widths[colIdx] - cellPadding * 2);
+          if (lines.length > maxLines) maxLines = lines.length;
+          return lines;
+        });
+        const rowHeight = Math.max(7, maxLines * 4.5 + 3);
+
+        // Page break check
+        if (curY + rowHeight > doc.internal.pageSize.getHeight() - 20) {
+          doc.addPage();
+          curY = 15;
+        }
+
+        // Striped background
+        if (rowIdx % 2 === 0) {
+          doc.setFillColor(245, 247, 250);
+          doc.rect(margin, curY, tableWidth, rowHeight, "F");
+        }
+
+        // Cell text
+        doc.setTextColor(60, 60, 60);
+        curX = margin;
+        cellTexts.forEach((lines, colIdx) => {
+          doc.text(lines, curX + cellPadding, curY + 4.5);
+          curX += widths[colIdx];
+        });
+
+        // Row border
+        doc.setDrawColor(220, 220, 220);
+        doc.line(margin, curY + rowHeight, margin + tableWidth, curY + rowHeight);
+        curY += rowHeight;
+      });
+
+      return curY; // return final Y position
+    };
+
     // ─── Header ───
     doc.setFillColor(20, 71, 230);
     doc.rect(0, 0, pageWidth, 35, "F");
@@ -909,23 +976,18 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(40, 40, 40);
       doc.text("Predicted Conditions", margin, y);
-      y += 4;
-      doc.autoTable({
-        startY: y,
-        head: [["Condition", "Probability", "ICD Code", "Description"]],
-        body: results.possible_diseases.map(d => [
+      y += 8;
+      y = drawTable({
+        headers: ["Condition", "Probability", "ICD Code", "Description"],
+        rows: results.possible_diseases.map(d => [
           d.name,
           `${d.probability}%`,
           d.icd_code || "-",
           d.description || "-",
         ]),
-        theme: "striped",
-        headStyles: { fillColor: [20, 71, 230], fontSize: 9 },
-        bodyStyles: { fontSize: 8 },
-        margin: { left: margin, right: margin },
-        columnStyles: { 3: { cellWidth: 70 } },
-      });
-      y = doc.lastAutoTable.finalY + 10;
+        colWidths: [40, 25, 25, pageWidth - margin * 2 - 90],
+        startY: y,
+      }) + 10;
     }
 
     // ─── Vitals Assessment ───
@@ -935,22 +997,17 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(40, 40, 40);
       doc.text("Vitals Assessment", margin, y);
-      y += 4;
-      doc.autoTable({
-        startY: y,
-        head: [["Vital", "Status"]],
-        body: [
+      y += 8;
+      y = drawTable({
+        headers: ["Vital", "Status"],
+        rows: [
           ["Temperature", (results.vitals_assessment.temperature_status || "N/A").replace(/_/g, " ")],
           ["Blood Pressure", (results.vitals_assessment.bp_status || "N/A").replace(/_/g, " ")],
           ["Heart Rate", (results.vitals_assessment.heart_rate_status || "N/A").replace(/_/g, " ")],
           ["SpO2", (results.vitals_assessment.spo2_status || "N/A").replace(/_/g, " ")],
         ],
-        theme: "grid",
-        headStyles: { fillColor: [20, 71, 230], fontSize: 9 },
-        bodyStyles: { fontSize: 9 },
-        margin: { left: margin, right: margin },
-      });
-      y = doc.lastAutoTable.finalY + 10;
+        startY: y,
+      }) + 10;
       if (results.vitals_assessment.overall_vitals_concern) {
         doc.setFontSize(9);
         doc.setFont("helvetica", "italic");
@@ -968,17 +1025,13 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(40, 40, 40);
       doc.text("Recommended Specialists", margin, y);
-      y += 4;
-      doc.autoTable({
+      y += 8;
+      y = drawTable({
+        headers: ["Specialty", "Reason"],
+        rows: results.recommended_specialties.map(s => [s.specialty, s.reason]),
+        headerColor: [34, 197, 94],
         startY: y,
-        head: [["Specialty", "Reason"]],
-        body: results.recommended_specialties.map(s => [s.specialty, s.reason]),
-        theme: "striped",
-        headStyles: { fillColor: [34, 197, 94], fontSize: 9 },
-        bodyStyles: { fontSize: 8 },
-        margin: { left: margin, right: margin },
-      });
-      y = doc.lastAutoTable.finalY + 10;
+      }) + 10;
     }
 
     // ─── First Aid ───
@@ -1099,7 +1152,7 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={generatePDFReport}
+                onClick={buildPDF}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#1447E6] to-violet-600 hover:from-blue-700 hover:to-violet-700 shadow-lg shadow-[#1447E6]/25 transition-all"
               >
                 <Download className="w-4 h-4" /> Download Report
