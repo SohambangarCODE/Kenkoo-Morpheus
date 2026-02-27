@@ -1,0 +1,320 @@
+import React, { useState, useEffect } from "react";
+import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
+
+function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const linkClass = ({ isActive }) =>
+  `relative z-[5]
+  sm:px-3 md:px-4 sm:py-1 md:py-2
+  text-sm sm:text-base md:text-lg
+  flex items-center justify-center gap-2
+  font-semibold
+  py-2.5 px-5
+  w-fit
+  rounded-2xl
+  border-t-2 border-l-2 border-b-4 border-r-4 border-slate-900
+  shadow-md
+  active:scale-95
+   hover:-translate-y-1
+  transition-all duration-200
+  group
+  ${
+    isActive
+      ? "bg-blue-700 text-white"
+      : "bg-blue-600 text-white hover:bg-blue-700"
+  }`;
+
+
+  // CSS for the underline animation that will come from cursor direction
+  const navItemStyle = {
+    position: "relative",
+    overflow: "hidden",
+    transition: "all 0.3s ease",
+  };
+
+  // This will be used to track mouse position for the underline animation
+  const handleMouseEnter = (e) => {
+    const el = e.currentTarget;
+    const underline = el.querySelector(".nav-underline");
+    if (underline) {
+      // Get cursor position relative to the element
+      const rect = el.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const width = rect.width;
+
+      // Determine if cursor is coming from left or right
+      const fromLeft = x < width / 2;
+
+      // Set the starting position of the underline
+      underline.style.left = fromLeft ? "-100%" : "100%";
+      underline.style.right = "auto";
+
+      // Add a subtle glow effect
+      el.style.textShadow = "0 0 5px rgba(56, 182, 255, 0.5)";
+
+      // Trigger animation
+      setTimeout(() => {
+        underline.style.left = "0";
+      }, 10);
+    }
+  };
+
+  const handleMouseLeave = (e) => {
+    const el = e.currentTarget;
+    // Remove the glow effect
+    el.style.textShadow = "none";
+  };
+
+  // Close mobile menu when a link is clicked
+  const handleLinkClick = () => {
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const isActivePath = (path) => location.pathname === path;
+
+  return (
+    <nav
+      className={`sticky top-0 z-50 transition-all duration-300 px-3 ${
+        isScrolled
+          ? "bg-white/40 backdrop-blur-md shadow-md border-b border-[#b4b4b4]/30"
+          : "bg-white shadow-sm border-b border-[#b4b4b4]/30"
+      }`}
+    >
+      <div className="container-fluid mx-auto">
+        <div className="flex items-center justify-between py-4">
+          {/* Logo and Brand */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <Link to="/" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center">
+              <img
+                src="/logo.png-removebg-preview.png"
+                alt="Kenkoo logo"
+                className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105"
+              />
+            </Link>
+            <div className="font-bold text-2xl sm:text-3xl md:text-4xl text-[#05395e]">
+              Kenkoo
+            </div>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <button
+              onClick={toggleMenu}
+              className="relative flex flex-col justify-center gap-2 w-6 h-4 sm:w-8 sm:h-6 focus:outline-none group"
+              aria-label="Toggle menu"
+            >
+              <motion.span
+                className="block h-1 w-full bg-gray-800 rounded-full"
+                animate={
+                  isMenuOpen ? { rotate: 45, y: 11 } : { rotate: 0, y: 0 }
+                }
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              />
+              <motion.span
+                className="block h-1 w-full bg-gray-800 rounded-full"
+                animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              />
+              <motion.span
+                className="block h-1 w-full bg-gray-800 rounded-full"
+                animate={
+                  isMenuOpen ? { rotate: -45, y: -11 } : { rotate: 0, y: 0 }
+                }
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              />
+            </button>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex md:gap-2 md:items-center">
+            <NavLink
+              to="/"
+              className={linkClass}
+              end
+              style={navItemStyle}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              Home
+              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full  transform transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0"></div>
+            </NavLink>
+            <NavLink
+              to="/Records"
+              className={linkClass}
+              style={navItemStyle}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              Records
+              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+            </NavLink>
+            <NavLink
+              to="/Insights"
+              className={linkClass}
+              style={navItemStyle}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              Insights
+              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full  transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+            </NavLink>
+            <NavLink
+              to="/careplan"
+              className={linkClass}
+              style={navItemStyle}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              Clinic Connect
+              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full  transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+            </NavLink>
+            <NavLink
+              to="/contact"
+              className={linkClass}
+              style={navItemStyle}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              Contact Us
+              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+            </NavLink>
+            
+            {user ? (
+              <>
+                 <NavLink
+                    to="/profile"
+                    className={linkClass}
+                    style={navItemStyle}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    Profile
+                    <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+                  </NavLink>
+                  <button
+                    onClick={handleLogout}
+                    className="ml-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors border border-red-100"
+                  >
+                    Logout
+                  </button>
+              </>
+            ) : (
+               <Link
+                to="/login"
+                className="ml-2 px-6 py-2.5 rounded-2xl bg-[#1447E6] text-white font-bold hover:bg-[#032b48] hover:-translate-y-1 transition-all duration-200 rounded-2xl
+  border-t-2 border-l-2 border-b-4 border-r-4 border-slate-900 hover:bg-blue-700 shadow-md active:scale-95"
+              >
+                Login
+              </Link>
+            )}
+           
+          </div>
+        </div>
+
+        {/* Mobile Navigation Menu */}
+        <div
+          className={`md:hidden ${isMenuOpen ? "block" : "hidden"} bg-white shadow-md z-20 border-b border-gray-200`}
+        >
+          <div className="flex flex-col py-2">
+            <NavLink
+              to="/"
+              className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
+              end
+              onClick={handleLinkClick}
+            >
+              Home
+            </NavLink>
+            <NavLink
+              to="/Records"
+              className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
+              onClick={handleLinkClick}
+            >
+              Records
+            </NavLink>
+            <NavLink
+              to="/Insights"
+              className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
+              onClick={handleLinkClick}
+            >
+              Insights
+            </NavLink>
+            <NavLink
+              to="/careplan"
+              className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
+              onClick={handleLinkClick}
+            >
+              Clinic Connect
+            </NavLink>
+            <NavLink
+              to="/contact"
+              className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
+              onClick={handleLinkClick}
+            >
+              Contact Us
+            </NavLink>
+            
+            <div className="border-t border-gray-100 my-2 pt-2"></div>
+            
+            {user ? (
+              <>
+                <NavLink
+                  to="/profile"
+                  className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
+                  onClick={handleLinkClick}
+                >
+                  Your Profile ({user.name})
+                </NavLink>
+                 <button
+                  onClick={() => {
+                    handleLogout();
+                    handleLinkClick();
+                  }}
+                  className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+                <NavLink
+                  to="/login"
+                  className="px-4 py-3 text-[#1447E6] hover:bg-blue-50 font-bold transition-all duration-300 hover:pl-6 hover:shadow-inner"
+                  onClick={handleLinkClick}
+                >
+                  Login / Sign Up
+                </NavLink>
+            )}
+            
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+export default Navbar;

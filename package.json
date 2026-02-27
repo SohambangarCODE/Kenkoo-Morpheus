@@ -1,0 +1,12 @@
+{
+  "name": "kenkoo-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm install --prefix Backend && npm install --prefix Frontend && npm run build --prefix Frontend",
+    "start": "npm start --prefix Backend"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
