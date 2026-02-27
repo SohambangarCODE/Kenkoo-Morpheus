@@ -26,6 +26,10 @@ const upload = multer({
       "image/png",
       "image/jpeg",
       "image/webp",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/csv",
+      "text/plain",
     ];
 
     if (allowed.includes(file.mimetype)) {

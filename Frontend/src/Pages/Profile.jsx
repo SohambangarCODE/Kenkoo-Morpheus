@@ -3,6 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
 
+const getApiUrl = () => {
+  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  return isLocal
+    ? `http://${window.location.hostname}:3000/api`
+    : "https://photons-innovate.onrender.com/api";
+};
+
 const Profile = () => {
   const { user, updateUser, loading: authLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
@@ -35,7 +42,7 @@ const Profile = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://photons-innovate.onrender.com/api/user/upload-photo", {
+      const res = await fetch(`${getApiUrl()}/user/upload-photo`, {
         method: "POST",
         headers: { 
             "Authorization": `Bearer ${token}`
@@ -57,7 +64,7 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://photons-innovate.onrender.com/api/user", {
+      const res = await fetch(`${getApiUrl()}/user`, {
         method: "PUT",
         headers: { 
             "Content-Type": "application/json",

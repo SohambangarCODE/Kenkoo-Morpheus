@@ -1,0 +1,1111 @@
+import React, { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
+import useVoiceInput from "../hooks/useVoiceInput";
+import {
+  Bot, Sparkles, Mic, MicOff, Send, Brain, Activity,
+  Heart, Thermometer, Stethoscope, Clock, Star,
+  ChevronRight, ChevronLeft, Zap, Shield, MessageSquare,
+  Upload, FileText, X, AlertTriangle, Phone,
+  MapPin, Pill, User, Weight, Ruler, Plus,
+  CheckCircle, Loader2, Globe, Volume2, Paperclip,
+  Trash2, ArrowRight, ArrowLeft, RotateCcw
+} from "lucide-react";
+
+/* ── Constants ─────────────────────────────────────────────────────── */
+const API_BASE = "http://localhost:3000/api";
+
+const COMMON_SYMPTOMS = [
+  "Headache", "Fever", "Cough", "Chest Pain", "Fatigue",
+  "Nausea", "Dizziness", "Shortness of Breath", "Sore Throat",
+  "Body Aches", "Vomiting", "Diarrhea", "Abdominal Pain",
+  "Back Pain", "Joint Pain", "Skin Rash", "Runny Nose",
+  "Loss of Appetite", "Insomnia", "Anxiety",
+];
+
+const PRE_CONDITIONS = [
+  "Diabetes", "Hypertension", "Asthma", "Heart Disease",
+  "Thyroid Disorder", "COPD", "Kidney Disease", "Liver Disease",
+  "Cancer", "HIV/AIDS", "Arthritis", "Epilepsy",
+  "Depression", "Obesity", "Anemia", "None",
+];
+
+const STEP_LABELS = [
+  { icon: <Stethoscope className="w-4 h-4" />, label: "Symptoms" },
+  { icon: <Activity className="w-4 h-4" />, label: "Vitals" },
+  { icon: <User className="w-4 h-4" />, label: "History" },
+  { icon: <Paperclip className="w-4 h-4" />, label: "Documents" },
+];
+
+const SEVERITY_CONFIG = {
+  low:      { emoji: "🟢", label: "Low",      color: "text-green-600",  bg: "bg-green-50",    border: "border-green-200", barColor: "bg-green-500"  },
+  moderate: { emoji: "🟡", label: "Moderate", color: "text-yellow-600", bg: "bg-yellow-50",   border: "border-yellow-200", barColor: "bg-yellow-500" },
+  high:     { emoji: "🔴", label: "High",     color: "text-red-600",    bg: "bg-red-50",      border: "border-red-200", barColor: "bg-red-500"    },
+  critical: { emoji: "🚨", label: "Critical", color: "text-red-700",    bg: "bg-red-100",     border: "border-red-400", barColor: "bg-red-700"    },
+};
+
+/* ── Animation ─────────────────────────────────────────────────────── */
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i = 0) => ({
+    opacity: 1, y: 0,
+    transition: { duration: 0.45, delay: i * 0.06, ease: "easeOut" },
+  }),
+};
+
+const slideVariants = {
+  enter: (dir) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (dir) => ({ x: dir < 0 ? 300 : -300, opacity: 0 }),
+};
+
+/* ── Main Component ────────────────────────────────────────────────── */
+const HealthAssistant = () => {
+  const { user } = useAuth();
+  const voice = useVoiceInput();
+  const fileInputRef = useRef(null);
+
+  // Wizard state
+  const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState(1);
+
+  // Step 1: Symptoms
+  const [symptoms, setSymptoms] = useState("");
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
+
+  // Step 2: Vitals
+  const [vitals, setVitals] = useState({
+    temperature: "", temperatureUnit: "F",
+    systolic: "", diastolic: "",
+    heartRate: "", spo2: "",
+  });
+
+  // Step 3: Medical History
+  const [history, setHistory] = useState({
+    age: "", gender: "", weight: "", height: "",
+    conditions: [],
+    medications: "", allergies: "",
+  });
+
+  // Step 4: Documents
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+
+  // Analysis state
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
+
+  /* ── Navigation ──────────────────────────────────────────────────── */
+  const goNext = () => {
+    if (step < 3) { setDirection(1); setStep(s => s + 1); }
+  };
+  const goBack = () => {
+    if (step > 0) { setDirection(-1); setStep(s => s - 1); }
+  };
+
+  /* ── Voice input sync ────────────────────────────────────────────── */
+  const toggleVoice = () => {
+    if (voice.isListening) {
+      voice.stopListening();
+      setSymptoms(prev => prev + (prev ? " " : "") + voice.transcript.trim());
+      voice.resetTranscript();
+    } else {
+      voice.resetTranscript();
+      voice.startListening();
+    }
+  };
+
+  /* ── File handling ───────────────────────────────────────────────── */
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setUploadedFiles(prev => [...prev, ...files]);
+    e.target.value = "";
+  };
+  const removeFile = (index) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  /* ── Symptom chip toggle ─────────────────────────────────────────── */
+  const toggleSymptom = (sym) => {
+    setSelectedSymptoms(prev =>
+      prev.includes(sym) ? prev.filter(s => s !== sym) : [...prev, sym]
+    );
+  };
+
+  /* ── Condition toggle ────────────────────────────────────────────── */
+  const toggleCondition = (cond) => {
+    if (cond === "None") {
+      setHistory(h => ({ ...h, conditions: h.conditions.includes("None") ? [] : ["None"] }));
+      return;
+    }
+    setHistory(h => ({
+      ...h,
+      conditions: h.conditions.includes(cond)
+        ? h.conditions.filter(c => c !== cond)
+        : [...h.conditions.filter(c => c !== "None"), cond],
+    }));
+  };
+
+  /* ── Submit Analysis ─────────────────────────────────────────────── */
+  const handleAnalyze = async () => {
+    const allSymptoms = [
+      symptoms.trim(),
+      ...selectedSymptoms,
+    ].filter(Boolean).join(", ");
+
+    if (!allSymptoms) {
+      setError("Please describe at least one symptom.");
+      setStep(0);
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setError(null);
+    setResults(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("symptoms", allSymptoms);
+      formData.append("vitals", JSON.stringify(vitals));
+      formData.append("medicalHistory", JSON.stringify(history));
+      formData.append("language", voice.languages.find(l => l.code === voice.selectedLanguage)?.label || "English");
+
+      if (uploadedFiles.length > 0) {
+        formData.append("file", uploadedFiles[0]);
+      }
+
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE}/assistant/analyze`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Analysis failed");
+      }
+
+      const data = await res.json();
+      setResults(data.analysis);
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  /* ── Reset ───────────────────────────────────────────────────────── */
+  const handleReset = () => {
+    setStep(0);
+    setDirection(1);
+    setSymptoms("");
+    setSelectedSymptoms([]);
+    setVitals({ temperature: "", temperatureUnit: "F", systolic: "", diastolic: "", heartRate: "", spo2: "" });
+    setHistory({ age: "", gender: "", weight: "", height: "", conditions: [], medications: "", allergies: "" });
+    setUploadedFiles([]);
+    setResults(null);
+    setError(null);
+  };
+
+  /* ── If results exist, show results page ─────────────────────────── */
+  if (results) {
+    return <ResultsPanel results={results} onReset={handleReset} user={user} />;
+  }
+
+  /* ── Loading state ───────────────────────────────────────────────── */
+  if (isAnalyzing) {
+    return <AnalyzingScreen />;
+  }
+
+  /* ── Render Wizard ───────────────────────────────────────────────── */
+  return (
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-violet-50/20 pb-24">
+      {/* Header */}
+      <div className="px-4 sm:px-6 pt-8 pb-4 max-w-4xl mx-auto">
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
+          <div className="inline-flex items-center gap-2 bg-[#1447E6]/10 border border-[#1447E6]/20 text-[#1447E6] px-4 py-1.5 rounded-full text-xs font-bold mb-4">
+            <Brain className="w-3.5 h-3.5" />
+            AI Health Analyzer
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+            Hello, {user?.name?.split(" ")[0] || "there"} 👋
+            <br />
+            <span className="bg-gradient-to-r from-[#1447E6] to-violet-600 bg-clip-text text-transparent">
+              Let's Analyze Your Health
+            </span>
+          </h1>
+          <p className="text-sm text-slate-500 mt-2 max-w-lg">
+            Provide your symptoms, vitals, and medical history — our AI will analyze like a senior physician.
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Step Indicator */}
+      <div className="px-4 sm:px-6 max-w-4xl mx-auto mb-6">
+        <div className="flex items-center gap-1 sm:gap-2">
+          {STEP_LABELS.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => { setDirection(i > step ? 1 : -1); setStep(i); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+                i === step
+                  ? "bg-[#1447E6] text-white shadow-lg shadow-[#1447E6]/25"
+                  : i < step
+                  ? "bg-[#1447E6]/10 text-[#1447E6]"
+                  : "bg-white text-slate-400 border border-slate-200"
+              }`}
+            >
+              {i < step ? <CheckCircle className="w-3.5 h-3.5" /> : s.icon}
+              <span className="hidden sm:inline">{s.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Step Content */}
+      <div className="px-4 sm:px-6 max-w-4xl mx-auto">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden min-h-[420px]">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={step}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="p-5 sm:p-8"
+            >
+              {step === 0 && (
+                <StepSymptoms
+                  symptoms={symptoms}
+                  setSymptoms={setSymptoms}
+                  selectedSymptoms={selectedSymptoms}
+                  toggleSymptom={toggleSymptom}
+                  voice={voice}
+                  toggleVoice={toggleVoice}
+                />
+              )}
+              {step === 1 && (
+                <StepVitals vitals={vitals} setVitals={setVitals} />
+              )}
+              {step === 2 && (
+                <StepHistory
+                  history={history}
+                  setHistory={setHistory}
+                  toggleCondition={toggleCondition}
+                />
+              )}
+              {step === 3 && (
+                <StepDocuments
+                  uploadedFiles={uploadedFiles}
+                  handleFileSelect={handleFileSelect}
+                  removeFile={removeFile}
+                  fileInputRef={fileInputRef}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Error */}
+          {error && (
+            <div className="px-5 sm:px-8 pb-4">
+              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" /> {error}
+              </div>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="px-5 sm:px-8 pb-6 flex items-center justify-between gap-4">
+            <button
+              onClick={goBack}
+              disabled={step === 0}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+
+            {step < 3 ? (
+              <button
+                onClick={goNext}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-[#1447E6] hover:bg-blue-700 shadow-lg shadow-[#1447E6]/25 transition-all"
+              >
+                Next <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={handleAnalyze}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#1447E6] to-violet-600 hover:from-blue-700 hover:to-violet-700 shadow-lg shadow-[#1447E6]/25 transition-all"
+              >
+                <Brain className="w-4 h-4" /> Analyze Now
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   STEP 1: SYMPTOMS
+   ══════════════════════════════════════════════════════════════════════ */
+const StepSymptoms = ({ symptoms, setSymptoms, selectedSymptoms, toggleSymptom, voice, toggleVoice }) => (
+  <div className="space-y-6">
+    <div>
+      <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-1">
+        <Stethoscope className="w-5 h-5 text-[#1447E6]" /> Describe Your Symptoms
+      </h2>
+      <p className="text-sm text-slate-500">Type or use voice input in your preferred language.</p>
+    </div>
+
+    {/* Language selector + Voice button */}
+    <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-200">
+        <Globe className="w-4 h-4 text-slate-400" />
+        <select
+          value={voice.selectedLanguage}
+          onChange={(e) => voice.setSelectedLanguage(e.target.value)}
+          className="bg-transparent text-sm font-medium text-slate-700 outline-none cursor-pointer"
+        >
+          {voice.languages.map((l) => (
+            <option key={l.code} value={l.code}>{l.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <button
+        onClick={toggleVoice}
+        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+          voice.isListening
+            ? "bg-red-500 text-white shadow-lg shadow-red-500/25 animate-pulse"
+            : "bg-[#1447E6]/10 text-[#1447E6] hover:bg-[#1447E6]/20"
+        }`}
+      >
+        {voice.isListening ? (
+          <><MicOff className="w-4 h-4" /> Stop Listening</>
+        ) : (
+          <><Mic className="w-4 h-4" /> Voice Input</>
+        )}
+      </button>
+    </div>
+
+    {/* Voice status */}
+    {voice.isListening && (
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center gap-3"
+      >
+        <div className="flex gap-1">
+          <span className="w-1.5 h-4 bg-red-500 rounded-full animate-pulse" />
+          <span className="w-1.5 h-6 bg-red-400 rounded-full animate-pulse [animation-delay:100ms]" />
+          <span className="w-1.5 h-3 bg-red-500 rounded-full animate-pulse [animation-delay:200ms]" />
+          <span className="w-1.5 h-5 bg-red-400 rounded-full animate-pulse [animation-delay:300ms]" />
+          <span className="w-1.5 h-4 bg-red-500 rounded-full animate-pulse [animation-delay:400ms]" />
+        </div>
+        <span className="text-sm text-red-700 font-medium">
+          Listening... speak now in {voice.languages.find(l => l.code === voice.selectedLanguage)?.label}
+        </span>
+      </motion.div>
+    )}
+
+    {voice.error && (
+      <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm rounded-xl px-4 py-3">
+        ⚠️ {voice.error}
+      </div>
+    )}
+
+    {/* Live transcript preview */}
+    {voice.isListening && voice.transcript && (
+      <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
+        <span className="font-bold">Live: </span>{voice.transcript}
+      </div>
+    )}
+
+    {/* Textarea */}
+    <textarea
+      value={symptoms}
+      onChange={(e) => setSymptoms(e.target.value)}
+      placeholder="E.g., I've been having persistent headaches for 3 days, mild fever, and body aches. The headache is mostly in the front region and gets worse in the evening..."
+      rows={5}
+      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:border-[#1447E6] focus:ring-2 focus:ring-[#1447E6]/10 resize-none transition-all"
+    />
+
+    {/* Quick symptom chips */}
+    <div>
+      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Quick Select Common Symptoms</p>
+      <div className="flex flex-wrap gap-2">
+        {COMMON_SYMPTOMS.map((sym) => (
+          <button
+            key={sym}
+            onClick={() => toggleSymptom(sym)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              selectedSymptoms.includes(sym)
+                ? "bg-[#1447E6] text-white shadow-md shadow-[#1447E6]/20"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            {sym}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+/* ══════════════════════════════════════════════════════════════════════
+   STEP 2: VITALS
+   ══════════════════════════════════════════════════════════════════════ */
+const StepVitals = ({ vitals, setVitals }) => {
+  const updateVital = (key, value) => setVitals(v => ({ ...v, [key]: value }));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-1">
+          <Activity className="w-5 h-5 text-[#1447E6]" /> Enter Your Vitals
+        </h2>
+        <p className="text-sm text-slate-500">If available, enter your current vitals for better analysis. All fields are optional.</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {/* Temperature */}
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center text-white">
+              <Thermometer className="w-5 h-5" />
+            </div>
+            <span className="font-bold text-slate-800 text-sm">Temperature</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              value={vitals.temperature}
+              onChange={(e) => updateVital("temperature", e.target.value)}
+              placeholder={vitals.temperatureUnit === "F" ? "98.6" : "37.0"}
+              className="flex-1 bg-white border border-orange-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-400"
+            />
+            <button
+              onClick={() => updateVital("temperatureUnit", vitals.temperatureUnit === "F" ? "C" : "F")}
+              className="px-3 py-2 bg-white border border-orange-200 rounded-xl text-sm font-bold text-orange-600 hover:bg-orange-100 transition-colors"
+            >
+              °{vitals.temperatureUnit}
+            </button>
+          </div>
+        </div>
+
+        {/* Blood Pressure */}
+        <div className="bg-gradient-to-br from-red-50 to-pink-50 border border-red-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 bg-gradient-to-br from-red-400 to-pink-500 rounded-xl flex items-center justify-center text-white">
+              <Heart className="w-5 h-5" />
+            </div>
+            <span className="font-bold text-slate-800 text-sm">Blood Pressure</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              value={vitals.systolic}
+              onChange={(e) => updateVital("systolic", e.target.value)}
+              placeholder="120"
+              className="flex-1 bg-white border border-red-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-400"
+            />
+            <span className="text-slate-400 font-bold">/</span>
+            <input
+              type="number"
+              value={vitals.diastolic}
+              onChange={(e) => updateVital("diastolic", e.target.value)}
+              placeholder="80"
+              className="flex-1 bg-white border border-red-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-400"
+            />
+            <span className="text-xs text-slate-500 font-medium">mmHg</span>
+          </div>
+        </div>
+
+        {/* Heart Rate */}
+        <div className="bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 bg-gradient-to-br from-violet-400 to-purple-500 rounded-xl flex items-center justify-center text-white">
+              <Zap className="w-5 h-5" />
+            </div>
+            <span className="font-bold text-slate-800 text-sm">Heart Rate</span>
+          </div>
+          <input
+            type="number"
+            value={vitals.heartRate}
+            onChange={(e) => updateVital("heartRate", e.target.value)}
+            placeholder="72 BPM"
+            className="w-full bg-white border border-violet-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-violet-400"
+          />
+        </div>
+
+        {/* SpO2 */}
+        <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center text-white">
+              <Activity className="w-5 h-5" />
+            </div>
+            <span className="font-bold text-slate-800 text-sm">SpO₂ (Oxygen)</span>
+          </div>
+          <input
+            type="number"
+            value={vitals.spo2}
+            onChange={(e) => updateVital("spo2", e.target.value)}
+            placeholder="98%"
+            className="w-full bg-white border border-cyan-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-cyan-400"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   STEP 3: MEDICAL HISTORY
+   ══════════════════════════════════════════════════════════════════════ */
+const StepHistory = ({ history, setHistory, toggleCondition }) => {
+  const updateField = (key, value) => setHistory(h => ({ ...h, [key]: value }));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-1">
+          <User className="w-5 h-5 text-[#1447E6]" /> Medical History & Demographics
+        </h2>
+        <p className="text-sm text-slate-500">Help us understand your background for more accurate analysis.</p>
+      </div>
+
+      {/* Demographics grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div>
+          <label className="text-xs font-bold text-slate-500 mb-1 block">Age</label>
+          <input
+            type="number"
+            value={history.age}
+            onChange={(e) => updateField("age", e.target.value)}
+            placeholder="25"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#1447E6]"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-500 mb-1 block">Gender</label>
+          <select
+            value={history.gender}
+            onChange={(e) => updateField("gender", e.target.value)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#1447E6] cursor-pointer"
+          >
+            <option value="">Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-500 mb-1 block">Weight (kg)</label>
+          <input
+            type="number"
+            value={history.weight}
+            onChange={(e) => updateField("weight", e.target.value)}
+            placeholder="70"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#1447E6]"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-500 mb-1 block">Height (cm)</label>
+          <input
+            type="number"
+            value={history.height}
+            onChange={(e) => updateField("height", e.target.value)}
+            placeholder="170"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#1447E6]"
+          />
+        </div>
+      </div>
+
+      {/* Pre-existing conditions */}
+      <div>
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Pre-existing Conditions</p>
+        <div className="flex flex-wrap gap-2">
+          {PRE_CONDITIONS.map((cond) => (
+            <button
+              key={cond}
+              onClick={() => toggleCondition(cond)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                history.conditions.includes(cond)
+                  ? cond === "None"
+                    ? "bg-green-500 text-white"
+                    : "bg-[#1447E6] text-white shadow-md shadow-[#1447E6]/20"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {cond}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Medications & Allergies */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="text-xs font-bold text-slate-500 mb-1 block">Current Medications</label>
+          <textarea
+            value={history.medications}
+            onChange={(e) => updateField("medications", e.target.value)}
+            placeholder="E.g., Metformin 500mg daily, Aspirin..."
+            rows={3}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#1447E6] resize-none"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-500 mb-1 block">Allergies</label>
+          <textarea
+            value={history.allergies}
+            onChange={(e) => updateField("allergies", e.target.value)}
+            placeholder="E.g., Penicillin, Peanuts, Latex..."
+            rows={3}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#1447E6] resize-none"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   STEP 4: DOCUMENTS
+   ══════════════════════════════════════════════════════════════════════ */
+const StepDocuments = ({ uploadedFiles, handleFileSelect, removeFile, fileInputRef }) => (
+  <div className="space-y-6">
+    <div>
+      <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-1">
+        <Paperclip className="w-5 h-5 text-[#1447E6]" /> Upload Medical Documents
+      </h2>
+      <p className="text-sm text-slate-500">Optional — upload lab reports, prescriptions, or test results for deeper analysis.</p>
+    </div>
+
+    {/* Drop zone */}
+    <div
+      onClick={() => fileInputRef.current?.click()}
+      className="border-2 border-dashed border-slate-300 hover:border-[#1447E6] rounded-2xl p-8 text-center cursor-pointer transition-all hover:bg-blue-50/30 group"
+    >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.csv,.txt"
+        onChange={handleFileSelect}
+        className="hidden"
+        multiple
+      />
+      <div className="w-14 h-14 bg-slate-100 group-hover:bg-[#1447E6]/10 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-colors">
+        <Upload className="w-7 h-7 text-slate-400 group-hover:text-[#1447E6] transition-colors" />
+      </div>
+      <p className="text-sm font-bold text-slate-700">Click to upload or drag & drop</p>
+      <p className="text-xs text-slate-400 mt-1">PDF, Images, DOCX, CSV, TXT — Max 25MB</p>
+    </div>
+
+    {/* File list */}
+    {uploadedFiles.length > 0 && (
+      <div className="space-y-2">
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Uploaded Files</p>
+        {uploadedFiles.map((file, i) => (
+          <div key={i} className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+            <FileText className="w-5 h-5 text-[#1447E6] flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-700 truncate">{file.name}</p>
+              <p className="text-xs text-slate-400">{(file.size / 1024).toFixed(1)} KB</p>
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+              className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+/* ══════════════════════════════════════════════════════════════════════
+   ANALYZING SCREEN
+   ══════════════════════════════════════════════════════════════════════ */
+const AnalyzingScreen = () => (
+  <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-violet-50/20 flex items-center justify-center">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="text-center max-w-md mx-auto px-6"
+    >
+      <div className="relative w-24 h-24 mx-auto mb-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1447E6] to-violet-600 rounded-full animate-ping opacity-20" />
+        <div className="absolute inset-2 bg-gradient-to-r from-[#1447E6] to-violet-600 rounded-full animate-pulse opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1447E6] to-violet-600 rounded-full flex items-center justify-center">
+          <Brain className="w-10 h-10 text-white animate-pulse" />
+        </div>
+      </div>
+      <h2 className="text-2xl font-extrabold text-slate-900 mb-3">Analyzing Your Health Data</h2>
+      <p className="text-sm text-slate-500 leading-relaxed">
+        Our AI is cross-referencing your symptoms, vitals, and medical history like a senior physician...
+      </p>
+      <div className="mt-6 flex items-center justify-center gap-2">
+        <Loader2 className="w-5 h-5 text-[#1447E6] animate-spin" />
+        <span className="text-sm font-bold text-[#1447E6]">Processing...</span>
+      </div>
+    </motion.div>
+  </div>
+);
+
+/* ══════════════════════════════════════════════════════════════════════
+   RESULTS PANEL
+   ══════════════════════════════════════════════════════════════════════ */
+const ResultsPanel = ({ results, onReset, user }) => {
+  const severity = SEVERITY_CONFIG[results.severity?.level] || SEVERITY_CONFIG.moderate;
+  const isEmergency = results.is_emergency || results.severity?.level === "critical";
+
+  return (
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-violet-50/20 pb-24">
+      {/* Emergency Banner */}
+      {isEmergency && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-600 text-white px-6 py-4"
+        >
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-lg">🚨 EMERGENCY DETECTED</h3>
+                <p className="text-red-100 text-sm">{results.emergency_message || "Seek immediate medical attention!"}</p>
+              </div>
+            </div>
+            <a
+              href="tel:911"
+              className="flex items-center gap-2 bg-white text-red-600 font-extrabold px-6 py-3 rounded-xl shadow-lg hover:bg-red-50 transition-all sm:ml-auto"
+            >
+              <Phone className="w-5 h-5" /> Call Emergency (911)
+            </a>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Header */}
+      <div className="px-4 sm:px-6 pt-8 pb-4 max-w-5xl mx-auto">
+        <motion.div initial="hidden" animate="visible" variants={fadeUp}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="inline-flex items-center gap-2 bg-[#1447E6]/10 text-[#1447E6] px-4 py-1.5 rounded-full text-xs font-bold">
+              <CheckCircle className="w-3.5 h-3.5" /> Analysis Complete
+            </div>
+            <button
+              onClick={onReset}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 transition-all"
+            >
+              <RotateCcw className="w-4 h-4" /> New Analysis
+            </button>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+            Your Health Analysis
+          </h1>
+          {results.summary && (
+            <p className="text-sm text-slate-500 mt-2 leading-relaxed max-w-2xl">{results.summary}</p>
+          )}
+        </motion.div>
+      </div>
+
+      <div className="px-4 sm:px-6 max-w-5xl mx-auto space-y-6">
+        {/* ── Severity Badge ───────────────────────────────────────── */}
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}>
+          <div className={`${severity.bg} ${severity.border} border rounded-2xl p-5 sm:p-6`}>
+            <div className="flex items-center gap-4">
+              <div className="text-4xl">{severity.emoji}</div>
+              <div className="flex-1">
+                <h3 className={`text-xl font-extrabold ${severity.color}`}>
+                  Severity: {severity.label}
+                </h3>
+                <p className="text-sm text-slate-600 mt-1">{results.severity?.reasoning}</p>
+              </div>
+              {results.severity?.score && (
+                <div className="hidden sm:flex flex-col items-center">
+                  <span className={`text-3xl font-black ${severity.color}`}>{results.severity.score}</span>
+                  <span className="text-xs text-slate-400 font-bold">/10</span>
+                </div>
+              )}
+            </div>
+            {/* Severity bar */}
+            <div className="mt-4 bg-white/70 rounded-full h-3 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${(results.severity?.score || 5) * 10}%` }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                className={`h-full rounded-full ${severity.barColor}`}
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ── Predicted Diseases ────────────────────────────────────── */}
+        {results.possible_diseases?.length > 0 && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2}>
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden">
+              <div className="px-5 sm:px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-violet-50 to-blue-50">
+                <h3 className="font-extrabold text-slate-900 flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-violet-600" />
+                  🔬 Predicted Conditions
+                </h3>
+              </div>
+              <div className="divide-y divide-slate-100">
+                {results.possible_diseases.map((disease, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="px-5 sm:px-6 py-4 hover:bg-slate-50/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-4 mb-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-slate-900">{disease.name}</h4>
+                          {disease.icd_code && (
+                            <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-2 py-0.5 rounded">
+                              {disease.icd_code}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-slate-500 mt-1">{disease.description}</p>
+                      </div>
+                      <span className="text-lg font-black text-[#1447E6] whitespace-nowrap">
+                        {disease.probability}%
+                      </span>
+                    </div>
+                    {/* Probability bar */}
+                    <div className="bg-slate-100 rounded-full h-2 overflow-hidden mb-2">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${disease.probability}%` }}
+                        transition={{ duration: 1, delay: i * 0.15, ease: "easeOut" }}
+                        className="h-full rounded-full bg-gradient-to-r from-[#1447E6] to-violet-500"
+                      />
+                    </div>
+                    {/* Matching symptoms */}
+                    {disease.matching_symptoms?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {disease.matching_symptoms.map((s, j) => (
+                          <span key={j} className="text-[10px] font-semibold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Vitals Assessment ────────────────────────────────────── */}
+        {results.vitals_assessment && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3}>
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-5 sm:p-6">
+              <h3 className="font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+                <Activity className="w-5 h-5 text-blue-600" />
+                📊 Vitals Assessment
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                {[
+                  { label: "Temperature", status: results.vitals_assessment.temperature_status, icon: <Thermometer className="w-4 h-4" /> },
+                  { label: "Blood Pressure", status: results.vitals_assessment.bp_status, icon: <Heart className="w-4 h-4" /> },
+                  { label: "Heart Rate", status: results.vitals_assessment.heart_rate_status, icon: <Zap className="w-4 h-4" /> },
+                  { label: "SpO₂", status: results.vitals_assessment.spo2_status, icon: <Activity className="w-4 h-4" /> },
+                ].map((v, i) => {
+                  const isNormal = (v.status || "").toLowerCase().includes("normal") || !v.status;
+                  return (
+                    <div key={i} className={`${isNormal ? "bg-green-50 border-green-200" : "bg-yellow-50 border-yellow-200"} border rounded-xl p-3 text-center`}>
+                      <div className={`inline-flex items-center justify-center w-8 h-8 rounded-lg mb-1 ${isNormal ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"}`}>
+                        {v.icon}
+                      </div>
+                      <p className="text-xs font-bold text-slate-700">{v.label}</p>
+                      <p className={`text-[11px] font-semibold capitalize mt-0.5 ${isNormal ? "text-green-600" : "text-yellow-600"}`}>
+                        {(v.status || "N/A").replace(/_/g, " ")}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+              {results.vitals_assessment.overall_vitals_concern && (
+                <p className="text-sm text-slate-600 bg-slate-50 rounded-xl px-4 py-3">
+                  {results.vitals_assessment.overall_vitals_concern}
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Doctor Recommendations + Nearby Clinics (side by side) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Doctor Specialties */}
+          {results.recommended_specialties?.length > 0 && (
+            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4}>
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-5 sm:p-6 h-full">
+                <h3 className="font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+                  <Stethoscope className="w-5 h-5 text-green-600" />
+                  👨‍⚕️ Recommended Doctors
+                </h3>
+                <div className="space-y-3">
+                  {results.recommended_specialties.map((doc, i) => (
+                    <div key={i} className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-teal-500 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                        <Stethoscope className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm">{doc.specialty}</h4>
+                        <p className="text-xs text-slate-500 mt-0.5">{doc.reason}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Nearby Clinics */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={5}>
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-5 sm:p-6 h-full">
+              <h3 className="font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+                <MapPin className="w-5 h-5 text-red-500" />
+                🏥 Find Nearby Clinics
+              </h3>
+              <p className="text-sm text-slate-500 mb-4">
+                Find hospitals and clinics near you for immediate consultation.
+              </p>
+              <div className="space-y-3">
+                <a
+                  href={`https://www.google.com/maps/search/hospital+near+me`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 hover:bg-blue-100 transition-colors"
+                >
+                  <MapPin className="w-5 h-5 text-blue-600" />
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-blue-800">Search Hospitals Near Me</p>
+                    <p className="text-xs text-blue-500">Opens Google Maps</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-blue-400" />
+                </a>
+                <a
+                  href={`https://www.google.com/maps/search/clinic+near+me`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 hover:bg-green-100 transition-colors"
+                >
+                  <MapPin className="w-5 h-5 text-green-600" />
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-green-800">Search Clinics Near Me</p>
+                    <p className="text-xs text-green-500">Opens Google Maps</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-green-400" />
+                </a>
+                <a
+                  href={`https://www.google.com/maps/search/pharmacy+near+me`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 hover:bg-violet-100 transition-colors"
+                >
+                  <Pill className="w-5 h-5 text-violet-600" />
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-violet-800">Search Pharmacies Near Me</p>
+                    <p className="text-xs text-violet-500">Opens Google Maps</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-violet-400" />
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ── First Aid Instructions ───────────────────────────────── */}
+        {results.first_aid_instructions?.length > 0 && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={6}>
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-5 sm:p-6">
+              <h3 className="font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+                <Shield className="w-5 h-5 text-orange-600" />
+                🩹 First Aid Instructions
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {results.first_aid_instructions.map((aid, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="flex items-start gap-3 bg-orange-50 border border-orange-200 rounded-xl p-4"
+                  >
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center text-white font-extrabold flex-shrink-0 text-lg">
+                      {aid.icon || aid.step}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-sm">{aid.title}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{aid.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Lifestyle Recommendations ────────────────────────────── */}
+        {results.lifestyle_recommendations?.length > 0 && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={7}>
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-5 sm:p-6">
+              <h3 className="font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+                <Star className="w-5 h-5 text-yellow-500" />
+                💡 Lifestyle Recommendations
+              </h3>
+              <div className="space-y-2">
+                {results.lifestyle_recommendations.map((rec, i) => (
+                  <div key={i} className="flex items-start gap-3 py-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-slate-700">{rec}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── When to Seek Help ────────────────────────────────────── */}
+        {results.when_to_seek_help && (
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={8}>
+            <div className="bg-gradient-to-r from-[#1447E6] to-violet-600 rounded-2xl p-5 sm:p-6 text-white">
+              <h3 className="font-extrabold flex items-center gap-2 mb-2">
+                <Clock className="w-5 h-5" />
+                ⏰ When to Seek Professional Help
+              </h3>
+              <p className="text-sm text-white/90 leading-relaxed">{results.when_to_seek_help}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Disclaimer ───────────────────────────────────────────── */}
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={9}>
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center">
+            <p className="text-xs text-slate-400 leading-relaxed">
+              ⚠️ <strong>Disclaimer:</strong> This AI analysis is for informational purposes only and does NOT constitute medical advice.
+              Always consult a qualified healthcare professional for diagnosis and treatment. In case of emergency, call your local emergency number immediately.
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+export default HealthAssistant;

@@ -18,9 +18,7 @@ function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const linkClass = ({ isActive }) =>
   `relative z-[5]
@@ -43,35 +41,23 @@ function Navbar() {
       : "bg-blue-600 text-white hover:bg-blue-700"
   }`;
 
-
-  // CSS for the underline animation that will come from cursor direction
   const navItemStyle = {
     position: "relative",
     overflow: "hidden",
     transition: "all 0.3s ease",
   };
 
-  // This will be used to track mouse position for the underline animation
   const handleMouseEnter = (e) => {
     const el = e.currentTarget;
     const underline = el.querySelector(".nav-underline");
     if (underline) {
-      // Get cursor position relative to the element
       const rect = el.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const width = rect.width;
-
-      // Determine if cursor is coming from left or right
       const fromLeft = x < width / 2;
-
-      // Set the starting position of the underline
       underline.style.left = fromLeft ? "-100%" : "100%";
       underline.style.right = "auto";
-
-      // Add a subtle glow effect
       el.style.textShadow = "0 0 5px rgba(56, 182, 255, 0.5)";
-
-      // Trigger animation
       setTimeout(() => {
         underline.style.left = "0";
       }, 10);
@@ -80,23 +66,17 @@ function Navbar() {
 
   const handleMouseLeave = (e) => {
     const el = e.currentTarget;
-    // Remove the glow effect
     el.style.textShadow = "none";
   };
 
-  // Close mobile menu when a link is clicked
   const handleLinkClick = () => {
-    if (isMenuOpen) {
-      setIsMenuOpen(false);
-    }
+    if (isMenuOpen) setIsMenuOpen(false);
   };
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
-
-  const isActivePath = (path) => location.pathname === path;
 
   return (
     <nav
@@ -110,7 +90,7 @@ function Navbar() {
         <div className="flex items-center justify-between py-4">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <Link to="/" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center">
+            <Link to="/app/personalassistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center">
               <img
                 src="/logo.png-removebg-preview.png"
                 alt="Kenkoo logo"
@@ -154,18 +134,17 @@ function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:gap-2 md:items-center">
             <NavLink
-              to="/"
+              to="/app/personalassistant"
               className={linkClass}
-              end
               style={navItemStyle}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              Home
-              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full  transform transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0"></div>
+              Personal Assistant
+              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
             </NavLink>
             <NavLink
-              to="/Records"
+              to="/app/Records"
               className={linkClass}
               style={navItemStyle}
               onMouseEnter={handleMouseEnter}
@@ -175,27 +154,27 @@ function Navbar() {
               <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
             </NavLink>
             <NavLink
-              to="/Insights"
+              to="/app/Insights"
               className={linkClass}
               style={navItemStyle}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
               Insights
-              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full  transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
             </NavLink>
             <NavLink
-              to="/careplan"
+              to="/app/careplan"
               className={linkClass}
               style={navItemStyle}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
               Clinic Connect
-              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full  transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
             </NavLink>
             <NavLink
-              to="/contact"
+              to="/app/contact"
               className={linkClass}
               style={navItemStyle}
               onMouseEnter={handleMouseEnter}
@@ -204,36 +183,35 @@ function Navbar() {
               Contact Us
               <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
             </NavLink>
-            
+
             {user ? (
               <>
-                 <NavLink
-                    to="/profile"
-                    className={linkClass}
-                    style={navItemStyle}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    Profile
-                    <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
-                  </NavLink>
-                  <button
-                    onClick={handleLogout}
-                    className="ml-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors border border-red-100"
-                  >
-                    Logout
-                  </button>
+                <NavLink
+                  to="/app/profile"
+                  className={linkClass}
+                  style={navItemStyle}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  Profile
+                  <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+                </NavLink>
+                <button
+                  onClick={handleLogout}
+                  className="ml-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors border border-red-100"
+                >
+                  Logout
+                </button>
               </>
             ) : (
-               <Link
+              <Link
                 to="/login"
-                className="ml-2 px-6 py-2.5 rounded-2xl bg-[#1447E6] text-white font-bold hover:bg-[#032b48] hover:-translate-y-1 transition-all duration-200 rounded-2xl
+                className="ml-2 px-6 py-2.5 rounded-2xl bg-[#1447E6] text-white font-bold hover:bg-[#032b48] hover:-translate-y-1 transition-all duration-200
   border-t-2 border-l-2 border-b-4 border-r-4 border-slate-900 hover:bg-blue-700 shadow-md active:scale-95"
               >
                 Login
               </Link>
             )}
-           
           </div>
         </div>
 
@@ -243,54 +221,53 @@ function Navbar() {
         >
           <div className="flex flex-col py-2">
             <NavLink
-              to="/"
+              to="/app/personalassistant"
               className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
-              end
               onClick={handleLinkClick}
             >
-              Home
+              Personal Assistant
             </NavLink>
             <NavLink
-              to="/Records"
+              to="/app/Records"
               className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
               onClick={handleLinkClick}
             >
               Records
             </NavLink>
             <NavLink
-              to="/Insights"
+              to="/app/Insights"
               className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
               onClick={handleLinkClick}
             >
               Insights
             </NavLink>
             <NavLink
-              to="/careplan"
+              to="/app/careplan"
               className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
               onClick={handleLinkClick}
             >
               Clinic Connect
             </NavLink>
             <NavLink
-              to="/contact"
+              to="/app/contact"
               className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
               onClick={handleLinkClick}
             >
               Contact Us
             </NavLink>
-            
+
             <div className="border-t border-gray-100 my-2 pt-2"></div>
-            
+
             {user ? (
               <>
                 <NavLink
-                  to="/profile"
+                  to="/app/profile"
                   className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
                   onClick={handleLinkClick}
                 >
                   Your Profile ({user.name})
                 </NavLink>
-                 <button
+                <button
                   onClick={() => {
                     handleLogout();
                     handleLinkClick();
@@ -301,15 +278,14 @@ function Navbar() {
                 </button>
               </>
             ) : (
-                <NavLink
-                  to="/login"
-                  className="px-4 py-3 text-[#1447E6] hover:bg-blue-50 font-bold transition-all duration-300 hover:pl-6 hover:shadow-inner"
-                  onClick={handleLinkClick}
-                >
-                  Login / Sign Up
-                </NavLink>
+              <NavLink
+                to="/login"
+                className="px-4 py-3 text-[#1447E6] hover:bg-blue-50 font-bold transition-all duration-300 hover:pl-6 hover:shadow-inner"
+                onClick={handleLinkClick}
+              >
+                Login / Sign Up
+              </NavLink>
             )}
-            
           </div>
         </div>
       </div>

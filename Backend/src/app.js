@@ -4,6 +4,7 @@ const path = require("path");
 
 const uploadRoutes = require("./assistant/routes/upload.route");
 const chatRoutes = require("./assistant/routes/chat.route");
+const healthAssistantRoutes = require("./assistant/routes/health-assistant.route");
 const userRoutes = require("./routes/user.route");
 
 const app = express()
@@ -34,6 +35,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/assistant", uploadRoutes);
 app.use("/api/assistant", chatRoutes);
+app.use("/api/assistant", healthAssistantRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/auth", require("./routes/auth.route"));
 app.use("/api/auth", require("./routes/auth.route"));

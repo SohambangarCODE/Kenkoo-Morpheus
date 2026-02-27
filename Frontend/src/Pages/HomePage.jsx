@@ -1,5 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { 
   Activity, Shield, ChevronRight, Stethoscope, 
   AlertTriangle, BarChart3, MapPin, PhoneCall, 
@@ -18,6 +19,7 @@ const stagger = {
 };
 
 const HomePage = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-[#1447E6]/30 overflow-x-hidden">
 
@@ -41,7 +43,10 @@ const HomePage = () => {
             </motion.p>
 
             <motion.div variants={fadeIn} className="flex flex-wrap gap-4 pt-6">
-              <button className="flex items-center gap-2 bg-[#1447E6] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:shadow-2xl hover:shadow-[#1447E6]/30 transition-all group">
+              <button
+                onClick={() => navigate("/login")}
+                className="flex items-center gap-2 bg-[#1447E6] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:shadow-2xl hover:shadow-[#1447E6]/30 transition-all group"
+              >
                 Start Smart Diagnosis <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
               <button className="px-8 py-4 rounded-2xl font-bold text-lg border-2 border-slate-200 text-slate-700 hover:border-[#1447E6] hover:text-[#1447E6] bg-white transition-all">
@@ -310,7 +315,10 @@ const HomePage = () => {
         >
           <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
           <h2 className="text-4xl md:text-6xl font-black mb-8 relative z-10">Take Control of Health Decisions Today</h2>
-          <button className="bg-white text-[#1447E6] px-12 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform relative z-10 shadow-2xl">
+          <button
+            onClick={() => navigate("/login")}
+            className="bg-white text-[#1447E6] px-12 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform relative z-10 shadow-2xl"
+          >
             Start Free Diagnosis
           </button>
           <p className="mt-8 font-bold text-[#1447E6]/20 bg-white/10 inline-block px-4 py-1 rounded-full text-xs uppercase tracking-widest relative z-10 text-white">
