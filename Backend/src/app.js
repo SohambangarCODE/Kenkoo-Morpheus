@@ -11,7 +11,7 @@ const app = express()
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin) || origin === "https://photons-innovate.onrender.com") {
+    if (!origin || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin) || origin === "https://photons-innovate.onrender.com" || origin === "https://kenkoo-morpheus.onrender.com") {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -26,9 +26,6 @@ app.use(express.json())
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-app.get("/", (req, res) => {
-  res.send("Kenkoo Backend is Live 🚀");
-});
 
 // Serve static files from the Frontend app
 // app.use(express.static(path.join(__dirname, "../../Frontend/dist")));
