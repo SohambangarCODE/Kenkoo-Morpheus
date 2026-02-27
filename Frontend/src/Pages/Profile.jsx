@@ -7,7 +7,7 @@ const getApiUrl = () => {
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
   return isLocal
     ? `http://${window.location.hostname}:3000/api`
-    : "https://photons-innovate.onrender.com/api";
+    : "https://kenkoo-morpheus.onrender.com/api";
 };
 
 const Profile = () => {
