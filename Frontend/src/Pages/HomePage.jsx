@@ -22,7 +22,7 @@ const HomePage = () => {
     <div className="min-h-screen bg-white text-slate-900 selection:bg-[#1447E6]/30 overflow-x-hidden">
 
       {/* 🦸 2️⃣ HERO SECTION */}
-      <section className="pt-24 lg:pt-32 pb-24 px-6 relative overflow-hidden min-h-[90vh] flex items-center">
+      <section className="pt-24 lg:pt-20 pb-24 px-6 relative overflow-hidden min-h-[90vh] flex items-center">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-[#1447E6]/5 skew-x-12 -z-10 translate-x-20" />
         
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
@@ -66,7 +66,7 @@ const HomePage = () => {
   {/* Outer Glow Effect - Modified to use your Brand Blue #1447E6 */}
   <div className="absolute -inset-1 bg-gradient-to-r from-[#1447E6]/30 to-cyan-400/30 rounded-[2.5rem] blur-xl opacity-50 group-hover:opacity-80 group-hover:blur-2xl transition duration-1000"></div>
   
-  <div className="relative bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 aspect-square flex items-center justify-center overflow-hidden shadow-[0_0_50px_rgba(20,71,230,0.1)]">
+  <div className="relative bottom-10 bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 aspect-square flex items-center justify-center overflow-hidden shadow-[0_0_50px_rgba(20,71,230,0.1)]">
     
     {/* Internal Animated Border Design */}
     <div className="w-full h-full border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center relative bg-slate-50/50">
@@ -207,7 +207,7 @@ const HomePage = () => {
               <button className="w-full py-4 bg-red-600 text-white rounded-xl font-black text-lg flex items-center justify-center gap-2">
                 <PhoneCall className="w-5 h-5" /> Call 911 / EMS
               </button>
-              <button className="w-full py-4 border-2 border-slate-200 text-slate-900 rounded-xl font-bold">Find Nearest ER</button>
+              <button className="w-full py-4 border-2 border-slate-200 text-slate-900 rounded-xl font-bold">Find Nearest Hospital/Clinic</button>
             </div>
           </motion.div>
         </div>
@@ -324,7 +324,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16">
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <Shield className="w-7 h-7 text-[#1447E6]" />
+              <img className="w-10 h-10" src="/Kenkoologo.jpg" alt="" />
               <span className="text-2xl font-black tracking-tighter">Kenkoo AI</span>
             </div>
             <p className="text-slate-400 font-medium">Empowering Early Health Decisions with world-class medical intelligence.</p>
