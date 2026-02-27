@@ -3,11 +3,8 @@ import { useState, useRef, useCallback } from "react";
 /**
  * Custom hook for Web Speech API voice input with multi-language support.
  *
- * Supported languages:
- *  en-US (English), hi-IN (Hindi), es-ES (Spanish), fr-FR (French),
- *  de-DE (German), pt-BR (Portuguese), ar-SA (Arabic), zh-CN (Chinese),
- *  ja-JP (Japanese), ko-KR (Korean), ta-IN (Tamil), te-IN (Telugu),
- *  bn-IN (Bengali), mr-IN (Marathi), gu-IN (Gujarati)
+ * FIX: Uses a ref to accumulate only FINAL transcripts, and exposes
+ * interim text separately so it doesn't get re-appended on every event.
  */
 const LANGUAGES = [
   { code: "en-US", label: "English" },
@@ -29,10 +26,12 @@ const LANGUAGES = [
 
 const useVoiceInput = () => {
   const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState("");
+  const [transcript, setTranscript] = useState("");       // finalized text only
+  const [interimText, setInterimText] = useState("");      // live preview (temporary)
   const [error, setError] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState("en-US");
   const recognitionRef = useRef(null);
+  const finalTextRef = useRef("");  // accumulates only final results
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -46,6 +45,8 @@ const useVoiceInput = () => {
       }
 
       setError(null);
+      finalTextRef.current = "";  // reset for this session
+
       const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
@@ -59,19 +60,24 @@ const useVoiceInput = () => {
       };
 
       recognition.onresult = (event) => {
-        let finalTranscript = "";
-        let interimTranscript = "";
+        // Rebuild the full transcript from ALL results every time.
+        // This is the correct approach — the API gives us the full
+        // result list, so we just re-scan it on each event.
+        let allFinal = "";
+        let currentInterim = "";
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const t = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += t + " ";
+        for (let i = 0; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            allFinal += result[0].transcript + " ";
           } else {
-            interimTranscript += t;
+            currentInterim += result[0].transcript;
           }
         }
 
-        setTranscript((prev) => prev + finalTranscript + interimTranscript);
+        finalTextRef.current = allFinal.trim();
+        setTranscript(allFinal.trim());
+        setInterimText(currentInterim);
       };
 
       recognition.onerror = (event) => {
@@ -88,6 +94,7 @@ const useVoiceInput = () => {
 
       recognition.onend = () => {
         setIsListening(false);
+        setInterimText("");  // clear interim when done
       };
 
       recognitionRef.current = recognition;
@@ -102,15 +109,19 @@ const useVoiceInput = () => {
       recognitionRef.current = null;
     }
     setIsListening(false);
+    setInterimText("");
   }, []);
 
   const resetTranscript = useCallback(() => {
     setTranscript("");
+    setInterimText("");
+    finalTextRef.current = "";
   }, []);
 
   return {
     isListening,
-    transcript,
+    transcript,        // finalized words only — safe to use as final input
+    interimText,       // live preview of what's being spoken right now
     error,
     isSupported,
     selectedLanguage,

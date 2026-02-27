@@ -1,7 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import useVoiceInput from "../hooks/useVoiceInput";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import {
   Bot, Sparkles, Mic, MicOff, Send, Brain, Activity,
   Heart, Thermometer, Stethoscope, Clock, Star,
@@ -9,7 +11,7 @@ import {
   Upload, FileText, X, AlertTriangle, Phone,
   MapPin, Pill, User, Weight, Ruler, Plus,
   CheckCircle, Loader2, Globe, Volume2, Paperclip,
-  Trash2, ArrowRight, ArrowLeft, RotateCcw
+  Trash2, ArrowRight, ArrowLeft, RotateCcw, Download
 } from "lucide-react";
 
 /* ── Constants ─────────────────────────────────────────────────────── */
@@ -107,7 +109,11 @@ const HealthAssistant = () => {
   const toggleVoice = () => {
     if (voice.isListening) {
       voice.stopListening();
-      setSymptoms(prev => prev + (prev ? " " : "") + voice.transcript.trim());
+      // Append only the finalized transcript (no duplicates)
+      const final = voice.transcript.trim();
+      if (final) {
+        setSymptoms(prev => prev + (prev ? " " : "") + final);
+      }
       voice.resetTranscript();
     } else {
       voice.resetTranscript();
@@ -210,7 +216,11 @@ const HealthAssistant = () => {
 
   /* ── If results exist, show results page ─────────────────────────── */
   if (results) {
-    return <ResultsPanel results={results} onReset={handleReset} user={user} />;
+    const symptomsSummary = [
+      symptoms.trim(),
+      ...selectedSymptoms,
+    ].filter(Boolean).join(", ");
+    return <ResultsPanel results={results} onReset={handleReset} user={user} symptomsSummary={symptomsSummary} />;
   }
 
   /* ── Loading state ───────────────────────────────────────────────── */
@@ -231,7 +241,7 @@ const HealthAssistant = () => {
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
             Hello, {user?.name?.split(" ")[0] || "there"} 👋
             <br />
-            <span className="bg-gradient-to-r from-[#1447E6] to-violet-600 bg-clip-text text-transparent">
+            <span className="bg-[#1447E6] bg-clip-text text-transparent">
               Let's Analyze Your Health
             </span>
           </h1>
@@ -419,9 +429,13 @@ const StepSymptoms = ({ symptoms, setSymptoms, selectedSymptoms, toggleSymptom, 
     )}
 
     {/* Live transcript preview */}
-    {voice.isListening && voice.transcript && (
+    {voice.isListening && (voice.transcript || voice.interimText) && (
       <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
-        <span className="font-bold">Live: </span>{voice.transcript}
+        <span className="font-bold">Live: </span>
+        {voice.transcript}
+        {voice.interimText && (
+          <span className="text-blue-400 italic"> {voice.interimText}</span>
+        )}
       </div>
     )}
 
@@ -519,7 +533,7 @@ const StepVitals = ({ vitals, setVitals }) => {
               value={vitals.diastolic}
               onChange={(e) => updateVital("diastolic", e.target.value)}
               placeholder="80"
-              className="flex-1 bg-white border border-red-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-400"
+              className="flex-1 w-10 bg-white border border-red-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-400"
             />
             <span className="text-xs text-slate-500 font-medium">mmHg</span>
           </div>
@@ -762,9 +776,290 @@ const AnalyzingScreen = () => (
 /* ══════════════════════════════════════════════════════════════════════
    RESULTS PANEL
    ══════════════════════════════════════════════════════════════════════ */
-const ResultsPanel = ({ results, onReset, user }) => {
+const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
   const severity = SEVERITY_CONFIG[results.severity?.level] || SEVERITY_CONFIG.moderate;
   const isEmergency = results.is_emergency || results.severity?.level === "critical";
+  const [reportSaved, setReportSaved] = useState(false);
+  const [savingReport, setSavingReport] = useState(false);
+  const savedRef = useRef(false);
+
+  /* ── Auto-save report to Records ────────────────────────────────── */
+  useEffect(() => {
+    if (savedRef.current) return; // prevent double-save in React StrictMode
+    savedRef.current = true;
+    saveReportToRecords();
+  }, []); // runs once on mount
+
+  const saveReportToRecords = async () => {
+    try {
+      setSavingReport(true);
+      const doc = buildPDF();
+      const pdfBase64 = doc.output("datauristring").split(",")[1]; // get base64 portion
+
+      // Build a descriptive title
+      const topDisease = results.possible_diseases?.[0]?.name || "General";
+      const dateStr = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      const symptomShort = (symptomsSummary || "").split(",").slice(0, 3).map(s => s.trim()).filter(Boolean).join(", ");
+      const title = `AI Health Analysis — ${symptomShort || topDisease} — ${dateStr}`;
+
+      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const baseUrl = isLocal
+        ? `http://${window.location.hostname}:3000/api/records`
+        : "https://photons-innovate.onrender.com/api/records";
+
+      const token = localStorage.getItem("token");
+      await fetch(baseUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title,
+          type: "AI Report",
+          provider: "Kenkoo AI Health Assistant",
+          fileData: pdfBase64,
+          fileMimeType: "application/pdf",
+          fileType: "pdf",
+          summary: results.summary || "",
+          analysis: results,
+        }),
+      });
+
+      setReportSaved(true);
+    } catch (err) {
+      console.error("Failed to auto-save report:", err);
+    } finally {
+      setSavingReport(false);
+    }
+  };
+
+  /* ── PDF Builder (shared by download + auto-save) ────────────────── */
+  const buildPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 14;
+    let y = 15;
+
+    const addPageIfNeeded = (spaceNeeded = 30) => {
+      if (y + spaceNeeded > doc.internal.pageSize.getHeight() - 20) {
+        doc.addPage();
+        y = 15;
+      }
+    };
+
+    // ─── Header ───
+    doc.setFillColor(20, 71, 230);
+    doc.rect(0, 0, pageWidth, 35, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("Kenkoo Health Report", margin, 18);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated: ${new Date().toLocaleString()}`, margin, 27);
+    doc.text(`Patient: ${user?.name || "N/A"}`, pageWidth - margin - 60, 27);
+    y = 45;
+
+    // ─── Severity ───
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Severity Assessment", margin, y);
+    y += 8;
+    const sevLevel = results.severity?.level || "moderate";
+    const sevColors = { low: [34,197,94], moderate: [234,179,8], high: [239,68,68], critical: [185,28,28] };
+    const sevC = sevColors[sevLevel] || sevColors.moderate;
+    doc.setFillColor(sevC[0], sevC[1], sevC[2]);
+    doc.roundedRect(margin, y, 50, 10, 2, 2, "F");
+    doc.setTextColor(255);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${sevLevel.toUpperCase()} (${results.severity?.score || "-"}/10)`, margin + 5, y + 7);
+    y += 15;
+    doc.setTextColor(80, 80, 80);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    if (results.severity?.reasoning) {
+      const lines = doc.splitTextToSize(results.severity.reasoning, pageWidth - margin * 2);
+      doc.text(lines, margin, y);
+      y += lines.length * 5 + 5;
+    }
+
+    // ─── Summary ───
+    if (results.summary) {
+      addPageIfNeeded(25);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40, 40, 40);
+      doc.text("Summary", margin, y);
+      y += 8;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(80, 80, 80);
+      const sumLines = doc.splitTextToSize(results.summary, pageWidth - margin * 2);
+      doc.text(sumLines, margin, y);
+      y += sumLines.length * 5 + 8;
+    }
+
+    // ─── Predicted Conditions table ───
+    if (results.possible_diseases?.length > 0) {
+      addPageIfNeeded(40);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40, 40, 40);
+      doc.text("Predicted Conditions", margin, y);
+      y += 4;
+      doc.autoTable({
+        startY: y,
+        head: [["Condition", "Probability", "ICD Code", "Description"]],
+        body: results.possible_diseases.map(d => [
+          d.name,
+          `${d.probability}%`,
+          d.icd_code || "-",
+          d.description || "-",
+        ]),
+        theme: "striped",
+        headStyles: { fillColor: [20, 71, 230], fontSize: 9 },
+        bodyStyles: { fontSize: 8 },
+        margin: { left: margin, right: margin },
+        columnStyles: { 3: { cellWidth: 70 } },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    // ─── Vitals Assessment ───
+    if (results.vitals_assessment) {
+      addPageIfNeeded(40);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40, 40, 40);
+      doc.text("Vitals Assessment", margin, y);
+      y += 4;
+      doc.autoTable({
+        startY: y,
+        head: [["Vital", "Status"]],
+        body: [
+          ["Temperature", (results.vitals_assessment.temperature_status || "N/A").replace(/_/g, " ")],
+          ["Blood Pressure", (results.vitals_assessment.bp_status || "N/A").replace(/_/g, " ")],
+          ["Heart Rate", (results.vitals_assessment.heart_rate_status || "N/A").replace(/_/g, " ")],
+          ["SpO2", (results.vitals_assessment.spo2_status || "N/A").replace(/_/g, " ")],
+        ],
+        theme: "grid",
+        headStyles: { fillColor: [20, 71, 230], fontSize: 9 },
+        bodyStyles: { fontSize: 9 },
+        margin: { left: margin, right: margin },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+      if (results.vitals_assessment.overall_vitals_concern) {
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(80, 80, 80);
+        const vLines = doc.splitTextToSize(results.vitals_assessment.overall_vitals_concern, pageWidth - margin * 2);
+        doc.text(vLines, margin, y);
+        y += vLines.length * 5 + 8;
+      }
+    }
+
+    // ─── Recommended Doctors ───
+    if (results.recommended_specialties?.length > 0) {
+      addPageIfNeeded(30);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40, 40, 40);
+      doc.text("Recommended Specialists", margin, y);
+      y += 4;
+      doc.autoTable({
+        startY: y,
+        head: [["Specialty", "Reason"]],
+        body: results.recommended_specialties.map(s => [s.specialty, s.reason]),
+        theme: "striped",
+        headStyles: { fillColor: [34, 197, 94], fontSize: 9 },
+        bodyStyles: { fontSize: 8 },
+        margin: { left: margin, right: margin },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    // ─── First Aid ───
+    if (results.first_aid_instructions?.length > 0) {
+      addPageIfNeeded(30);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40, 40, 40);
+      doc.text("First Aid Instructions", margin, y);
+      y += 8;
+      results.first_aid_instructions.forEach((aid, i) => {
+        addPageIfNeeded(20);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(60, 60, 60);
+        doc.text(`${i + 1}. ${aid.title}`, margin, y);
+        y += 5;
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 100, 100);
+        const aLines = doc.splitTextToSize(aid.description, pageWidth - margin * 2 - 5);
+        doc.text(aLines, margin + 5, y);
+        y += aLines.length * 5 + 4;
+      });
+      y += 4;
+    }
+
+    // ─── Lifestyle Recommendations ───
+    if (results.lifestyle_recommendations?.length > 0) {
+      addPageIfNeeded(25);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40, 40, 40);
+      doc.text("Lifestyle Recommendations", margin, y);
+      y += 8;
+      results.lifestyle_recommendations.forEach((rec, i) => {
+        addPageIfNeeded(12);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(80, 80, 80);
+        const rLines = doc.splitTextToSize(`${i + 1}. ${rec}`, pageWidth - margin * 2);
+        doc.text(rLines, margin, y);
+        y += rLines.length * 5 + 2;
+      });
+      y += 4;
+    }
+
+    // ─── When to Seek Help ───
+    if (results.when_to_seek_help) {
+      addPageIfNeeded(25);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(40, 40, 40);
+      doc.text("When to Seek Professional Help", margin, y);
+      y += 8;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(80, 80, 80);
+      const hLines = doc.splitTextToSize(results.when_to_seek_help, pageWidth - margin * 2);
+      doc.text(hLines, margin, y);
+      y += hLines.length * 5 + 8;
+    }
+
+    // ─── Footer ───
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      const pH = doc.internal.pageSize.getHeight();
+      doc.setFillColor(245, 245, 250);
+      doc.rect(0, pH - 15, pageWidth, 15, "F");
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(150, 150, 150);
+      doc.text("Disclaimer: This AI report is for informational purposes only. Always consult a qualified healthcare professional.", margin, pH - 7);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin - 20, pH - 7);
+    }
+
+    // Download
+    const patientName = (user?.name || "Patient").replace(/\s+/g, "_");
+    doc.save(`Kenkoo_Health_Report_${patientName}_${new Date().toISOString().slice(0,10)}.pdf`);
+  };
 
   return (
     <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-violet-50/20 pb-24">
@@ -802,12 +1097,20 @@ const ResultsPanel = ({ results, onReset, user }) => {
             <div className="inline-flex items-center gap-2 bg-[#1447E6]/10 text-[#1447E6] px-4 py-1.5 rounded-full text-xs font-bold">
               <CheckCircle className="w-3.5 h-3.5" /> Analysis Complete
             </div>
-            <button
-              onClick={onReset}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 transition-all"
-            >
-              <RotateCcw className="w-4 h-4" /> New Analysis
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={generatePDFReport}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#1447E6] to-violet-600 hover:from-blue-700 hover:to-violet-700 shadow-lg shadow-[#1447E6]/25 transition-all"
+              >
+                <Download className="w-4 h-4" /> Download Report
+              </button>
+              <button
+                onClick={onReset}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 transition-all"
+              >
+                <RotateCcw className="w-4 h-4" /> New Analysis
+              </button>
+            </div>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
             Your Health Analysis

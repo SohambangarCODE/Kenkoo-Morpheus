@@ -71,8 +71,42 @@ const viewFile = async (req, res) => {
   }
 };
 
+// @desc    Create a record programmatically (e.g. AI Report)
+// @route   POST /api/records
+// @access  Private
+const createRecord = async (req, res) => {
+  try {
+    const { title, type, provider, fileData, fileMimeType, fileType, analysis, summary } = req.body;
+
+    if (!title || !fileData) {
+      return res.status(400).json({ message: "Title and fileData are required" });
+    }
+
+    const record = await Record.create({
+      user: req.user._id,
+      title,
+      fileName: title,
+      type: type || "AI Report",
+      provider: provider || "Kenkoo AI Health Assistant",
+      fileUrl: "/ai-report",
+      fileData,
+      fileMimeType: fileMimeType || "application/pdf",
+      fileType: fileType || "pdf",
+      analysis: analysis || null,
+      summary: summary || "",
+      date: new Date(),
+    });
+
+    res.status(201).json(record);
+  } catch (error) {
+    console.error("Error creating record:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   getRecords,
   deleteRecord,
   viewFile,
+  createRecord,
 };

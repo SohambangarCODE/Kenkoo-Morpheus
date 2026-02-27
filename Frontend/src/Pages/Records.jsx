@@ -248,8 +248,9 @@ const Records = () => {
     switch (type) {
       case "Lab Report": return "ri-flask-line";
       case "Prescription": return "ri-medicine-bottle-line";
-      case "Scan": return "ri-body-scan-line"; // or ri-pulse-line
+      case "Scan": return "ri-body-scan-line";
       case "Bill": return "ri-bill-line";
+      case "AI Report": return "ri-robot-line";
       default: return "ri-file-text-line";
     }
   };
@@ -260,6 +261,7 @@ const Records = () => {
       case "Prescription": return "text-red-600 bg-red-50";
       case "Scan": return "text-purple-600 bg-purple-50";
       case "Bill": return "text-green-600 bg-green-50";
+      case "AI Report": return "text-indigo-600 bg-indigo-50";
       default: return "text-gray-600 bg-gray-50";
     }
   };
@@ -296,7 +298,7 @@ const Records = () => {
 
             {/* Filter Tabs */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                {["All", "Lab Report", "Prescription", "Scan", "Bill"].map((tab) => (
+                {["All", "Lab Report", "Prescription", "Scan", "Bill", "AI Report"].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setFilter(tab)}
