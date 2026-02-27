@@ -140,7 +140,7 @@ function Navbar() {
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              Personal Assistant
+              Diagnosis
               <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
             </NavLink>
             <NavLink
@@ -170,7 +170,17 @@ function Navbar() {
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              Clinic Connect
+              Doctor Connect
+              <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+            </NavLink>
+            <NavLink
+              to="/app/firstaid"
+              className={linkClass}
+              style={navItemStyle}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              First Aid
               <div className="nav-underline absolute bottom-0 left-0 h-0.5 w-full transform transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
             </NavLink>
             <NavLink
@@ -225,7 +235,7 @@ function Navbar() {
               className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
               onClick={handleLinkClick}
             >
-              Personal Assistant
+              Diagnosis
             </NavLink>
             <NavLink
               to="/app/Records"
@@ -246,7 +256,14 @@ function Navbar() {
               className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
               onClick={handleLinkClick}
             >
-              Clinic Connect
+              Doctor Connect
+            </NavLink>
+            <NavLink
+              to="/app/firstaid"
+              className="px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#05395e] font-medium transition-all duration-300 hover:pl-6 hover:shadow-inner"
+              onClick={handleLinkClick}
+            >
+              First Aid
             </NavLink>
             <NavLink
               to="/app/contact"

@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Records from "./Pages/Records";
 import Insights from "./Pages/Insights";
 import CarePlan from "./Pages/CarePlan";
+import FirstAid from "./Pages/FirstAid";
 import ContactPage from "./Pages/ContactPage";
 import Profile from "./Pages/Profile";
 import HomePage from "./Pages/HomePage";
@@ -28,6 +29,7 @@ const AppShell = () => (
         <Route path="Records"           element={<Records />} />
         <Route path="Insights"          element={<Insights />} />
         <Route path="careplan"          element={<CarePlan />} />
+        <Route path="firstaid"          element={<FirstAid />} />
         <Route path="contact"           element={<ContactPage />} />
         <Route path="profile"           element={<Profile />} />
       </Routes>

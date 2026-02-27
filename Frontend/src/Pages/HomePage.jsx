@@ -28,9 +28,7 @@ const HomePage = () => {
                 <div className="max-w-6xl w-full px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
                         {/* Icon fallback since the logo might be needed */}
-                        <div className="w-8 h-8 rounded-lg bg-[#1447E6]/10 flex items-center justify-center border border-[#1447E6]/20">
-                            <Activity className="text-[#1447E6] w-5 h-5" />
-                        </div>
+                        <img className="w-10 h-10" src="Kenkoologo.jpg" alt="" />
                         <span className="text-slate-900 font-bold text-xl tracking-tight">Kenkoo AI</span>
                     </div>
                     <div className="flex items-center gap-6">
@@ -99,26 +97,26 @@ const HomePage = () => {
                 < section className="py-24 px-6 w-full bg-[white]/30 flex justify-center" >
                     <div className="max-w-6xl w-full grid md:grid-cols-3 gap-6">
                         {[
-                            { icon: <Stethoscope />, title: "Enter Symptoms", desc: "AI analyzes patient condition instantly", color: "text-[#1447E6]" },
-                            { icon: <AlertTriangle />, title: "Emergency Risk Check", desc: "Detect time-sensitive critical cases", color: "text-[#1447E6]" },
-                            { icon: <BarChart3 />, title: "View Health Insights", desc: "Track severity trends & reports", color: "text-[#1447E6]" }
-                        ].map((card, i) => (
-                            <motion.div
-                                key={i}
-                                whileHover={{ y: -5 }}
-                                className="p-8 bg-[white] border border-slate-100 hover:border-slate-200 rounded-[1.5rem] transition-all cursor-pointer group shadow-lg"
-                            >
-                                <div className={`w-14 h-14 rounded-2xl bg-[white] flex items-center justify-center mb-6 ${card.color}`}>
-                                    {card.icon}
-                                </div>
-                                <h3 className="text-xl font-bold mb-3 text-slate-900">{card.title}</h3>
-                                <p className="text-slate-500 text-sm leading-relaxed">{card.desc}</p>
-                            </motion.div>
-                        ))}
+            { icon: <Stethoscope />, title: "Enter Symptoms", desc: "AI analyzes patient condition instantly", color: "text-[#1447E6]" },
+            { icon: <AlertTriangle />, title: "Emergency Risk Check", desc: "Detect time-sensitive critical cases", color: "text-red-500" },
+            { icon: <BarChart3 />, title: "View Health Insights", desc: "Track severity trends & reports", color: "text-cyan-600" }
+          ].map((card, i) => (
+            <motion.div 
+              key={i}
+              whileHover={{ y: -10 }}
+              className="p-8 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-xl transition-all cursor-pointer group"
+            >
+              <div className={`w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-6 ${card.color} group-hover:bg-[#1447E6] group-hover:text-white transition-colors`}>
+                {card.icon}
+              </div>
+              <h3 className="text-2xl font-bold mb-3">{card.title}</h3>
+              <p className="text-slate-500 font-medium">{card.desc}</p>
+            </motion.div>
+          ))}
                     </div>
                 </section >
 
-                {/* ðŸ¤– 4ï¸ âƒ£ AI TRIAGE PREVIEW */}
+                {/*AI TRIAGE PREVIEW */}
                 < section className="py-24 px-6 w-full max-w-6xl" >
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <motion.div
@@ -138,7 +136,7 @@ const HomePage = () => {
                                 ].map((item, i) => (
                                     <div key={i} className="space-y-2">
                                         <div className="flex justify-between font-bold text-sm">
-                                            <span className="text-slate-600">{item.label} <span className="text-slate-500 font-normal ml-1">â€” {item.risk}</span></span>
+                                            <span className="text-slate-600">{item.label} <span className="text-slate-500 font-normal ml-1">— {item.risk}</span></span>
                                             <span className="text-slate-500">{item.val}%</span>
                                         </div>
                                         <div className="h-1.5 bg-[white] rounded-full overflow-hidden">
@@ -148,7 +146,7 @@ const HomePage = () => {
                                 ))}
                             </div>
                             <div className="mt-8 p-4 bg-[#1447E6]/10 border-l-4 border-[#1447E6] rounded-r-xl">
-                                <p className="text-sm font-bold text-slate-900">Risk Level: 74% â€” High</p>
+                                <p className="text-sm font-bold text-slate-900">Risk Level: 74% — High</p>
                                 <p className="text-sm text-slate-500 mt-1">Suggested Action: Refer to Pulmonologist</p>
                             </div>
                         </motion.div>
@@ -158,7 +156,7 @@ const HomePage = () => {
                             <p className="text-lg text-slate-500 leading-relaxed max-w-md">
                                 Our Smart Triage Intelligence Engine (STIE) evaluates symptoms using structured AI reasoning and medical severity classification.
                             </p>
-                            <p className="text-lg font-semibold text-[#1447E6]">It doesnâ€™t just guess conditions â€” it prioritizes risk.</p>
+                            <p className="text-lg font-semibold text-[#1447E6]">It doesnot just guess conditions — it prioritizes risk.</p>
                         </div>
                     </div>
                 </section >
@@ -174,7 +172,7 @@ const HomePage = () => {
                                 {['Triggers Emergency Alert', 'Displays Nearest Hospitals', 'Shows Ambulance Numbers', 'Recommends Immediate Action'].map((item, i) => (
                                     <div key={i} className="flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]" />
-                                        <span className="font-medium text-slate-100">{item}</span>
+                                        <span className="font-medium text-slate-900">{item}</span>
                                     </div>
                                 ))}
                             </div>
@@ -201,35 +199,10 @@ const HomePage = () => {
                     </div>
                 </section >
 
-                {/* ðŸŒ 6ï¸ âƒ£ ACCESSIBILITY & RURAL SUPPORT */}
-                < section className="py-24 px-6 w-full flex justify-center bg-[white]/30" >
-                    <div className="max-w-6xl w-full">
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="p-10 rounded-3xl bg-[white] border border-slate-100">
-                                <PlusCircle className="w-12 h-12 text-[#1447E6] mb-6" />
-                                <h3 className="text-2xl font-bold text-slate-900 mb-4">For Frontline Health Workers</h3>
-                                <ul className="space-y-3 text-slate-500 font-medium text-sm">
-                                    <li>â€¢ Symptom Entry</li>
-                                    <li>â€¢ AI Triage</li>
-                                    <li>â€¢ Referral Assistance</li>
-                                </ul>
-                            </div>
-                            <div className="p-10 rounded-3xl bg-[white] border border-slate-100">
-                                <WifiOff className="w-12 h-12 text-[#1447E6] mb-6" />
-                                <h3 className="text-2xl font-bold text-slate-900 mb-4">Offline Support for Remote Areas</h3>
-                                <ul className="space-y-3 text-slate-500 font-medium text-sm">
-                                    <li>â€¢ Works without internet</li>
-                                    <li>â€¢ Local sync</li>
-                                    <li>â€¢ Lightweight architecture</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <p className="text-center mt-12 text-lg font-bold text-slate-500 italic">Bridging healthcare gaps across urban and rural regions.</p>
-                    </div>
-                </section >
+                
 
-                {/* ðŸ”„ 7ï¸ âƒ£ HOW IT WORKS */}
-                < section className="py-24 px-6 w-full max-w-6xl" >
+                {/*HOW IT WORKS */}
+                < section className="py-2 px-6 w-full max-w-6xl" >
                     <h2 className="text-2xl font-black text-center mb-16 uppercase tracking-widest text-[#1447E6]">The Workflow</h2>
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                         {[
@@ -271,8 +244,8 @@ const HomePage = () => {
                     </div>
                 </section >
 
-                {/* ðŸ§© 9ï¸ âƒ£ END-TO-END INTEGRATIONS */}
-                < section className="py-24 px-6 w-full max-w-6xl" >
+                {/*END-TO-END INTEGRATIONS */}
+                < section className="py-2 px-6 w-full max-w-6xl" >
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                         {[
                             "Symptom Smart Forms", "Voice Input", "Image Upload",
@@ -301,18 +274,18 @@ const HomePage = () => {
                             Start Free Diagnosis <ArrowRight className="w-5 h-5" />
                         </button>
                         <p className="mt-8 font-bold text-[#1447E6] bg-[#1447E6]/10 inline-block px-4 py-1.5 rounded-full text-xs uppercase tracking-widest relative z-10">
-                            Not a replacement for doctors â€” a companion for informed action.
+                            Not a replacement for doctors — a companion for informed action.
                         </p>
                     </motion.div>
                 </section>
             </main>
 
-            {/* ðŸ¦¶ 11ï¸ âƒ£ FOOTER */}
+            {/*FOOTER */}
             < footer className="w-full py-16 px-6 bg-[white] border-t border-slate-100 flex justify-center" >
                 <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-3 gap-16">
                     <div className="space-y-6">
-                        <div className="flex items-center gap-2 grayscale opacity-80">
-                            <Activity className="text-[#1447E6] w-6 h-6" />
+                        <div className="flex items-center gap-2 opacity-80">
+                            <img className="w-10 h-10" src="Kenkoologo.jpg" alt="" />
                             <span className="text-slate-900 font-bold text-xl tracking-tighter">Kenkoo AI</span>
                         </div>
                         <p className="text-slate-500 font-medium text-sm">Empowering Early Health Decisions with world-class medical intelligence.</p>
@@ -339,8 +312,8 @@ const HomePage = () => {
 
                     <div className="space-y-4">
                         <h5 className="font-black text-slate-600 uppercase tracking-widest text-xs">Contact</h5>
-                        <p className="text-[#1447E6] font-bold text-sm">support@kenkooai.com</p>
-                        <p className="text-slate-600 text-[10px] mt-8 font-bold uppercase tracking-widest">Â© 2026 Kenkoo AI â€“ Empowering Early Health Decisions</p>
+                        <p className="text-[#1447E6] font-bold text-sm">kenkoohealth@gmail.com</p>
+                        <p className="text-slate-600 text-[10px] mt-8 font-bold uppercase tracking-widest">© 2026 Kenkoo AI Empowering Early Health Decisions</p>
                     </div>
                 </div>
             </footer >

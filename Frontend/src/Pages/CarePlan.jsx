@@ -366,12 +366,10 @@ const CarePlan = () => {
 
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                <i className="ri-map-pin-heart-fill text-white text-lg" />
-              </div>
+              <img className="w-10 h-10" src="logo.png-removebg-preview.png" alt="" />
               <span className="font-bold text-lg tracking-wide">Kenkoo</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Clinic Connect</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Doctor Connect</h1>
             <p className="text-blue-100 text-sm sm:text-base opacity-90 max-w-lg">
               Find nearby hospitals, clinics & pharmacies — get directions, call, and navigate in one tap.
             </p>
@@ -494,7 +492,7 @@ const CarePlan = () => {
 
         {/* ── Info Cards ── */}
         <div className="mt-8 mb-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Why Clinic Connect?</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Why Doctor Connect?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {[
               { icon: "ri-map-pin-2-fill", title: "Real-Time Navigation", desc: "Get turn-by-turn directions to any clinic instantly.", color: "text-blue-600", bg: "bg-blue-50" },
