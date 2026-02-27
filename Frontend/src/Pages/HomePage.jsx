@@ -19,41 +19,41 @@ const stagger = {
 
 const HomePage = () => {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-[#1447E6]/30 overflow-x-hidden">
+    <div className="min-h-screen bg-white text-slate-900 selection:bg-[#1447E6]/30 overflow-x-hidden">
 
       {/* 🦸 2️⃣ HERO SECTION */}
-      <section className="pt-15 pb-24 px-6 relative overflow-hidden">
+      <section className="pt-24 lg:pt-32 pb-24 px-6 relative overflow-hidden min-h-[90vh] flex items-center">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-[#1447E6]/5 skew-x-12 -z-10 translate-x-20" />
         
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <motion.div 
             initial="hidden" animate="visible" variants={stagger}
-            className="space-y-6"
+            className="space-y-8"
           >
-            <motion.h1 variants={fadeIn} className="text-5xl lg:text-7xl font-extrabold text-blue-900 leading-[1.1]">
+            <motion.h1 variants={fadeIn} className="text-5xl lg:text-7xl font-extrabold text-blue-900 leading-[1.1] tracking-tight">
               AI-Powered First Response <br />
-              <span className="text-blue-900">Health Companion</span>
+              <span className="text-[#1447E6]">Health Companion</span>
             </motion.h1>
 
             
-            <motion.p variants={fadeIn} className="text-lg text-slate-500 max-w-lg leading-relaxed border-l-4 border-[#1447E6]/20 pl-4">
+            <motion.p variants={fadeIn} className="text-xl text-slate-600 max-w-lg leading-relaxed border-l-4 border-[#1447E6] pl-5">
               LifeLine AI analyzes symptoms, detects emergencies, suggests the right medical action, and connects users to nearby care — instantly.
             </motion.p>
 
-            <motion.div variants={fadeIn} className="flex flex-wrap gap-4 pt-4">
-              <button className="flex items-center gap-2 bg-[#1447E6] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:shadow-xl hover:shadow-[#1447E6]/20 transition-all group">
+            <motion.div variants={fadeIn} className="flex flex-wrap gap-4 pt-6">
+              <button className="flex items-center gap-2 bg-[#1447E6] text-white px-8 py-4 rounded-2xl font-bold text-lg hover:shadow-2xl hover:shadow-[#1447E6]/30 transition-all group">
                 Start Smart Diagnosis <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="px-8 py-4 rounded-2xl font-bold text-lg border-2 border-slate-200 hover:border-[#1447E6] hover:text-[#1447E6] transition-all">
+              <button className="px-8 py-4 rounded-2xl font-bold text-lg border-2 border-slate-200 text-slate-700 hover:border-[#1447E6] hover:text-[#1447E6] bg-white transition-all">
                 Learn How It Works
               </button>
             </motion.div>
 
-            <motion.div variants={fadeIn} className="flex flex-wrap gap-6 text-sm font-bold text-slate-400">
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-[#1447E6]" /> Early Risk Detection</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-[#1447E6]" /> Golden Hour Alerts</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-[#1447E6]" /> Doctor Recommendations</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-[#1447E6]" /> Multilingual Support</span>
+            <motion.div variants={fadeIn} className="flex flex-wrap gap-6 text-sm font-bold text-slate-700 pt-4">
+              <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100"><CheckCircle2 className="w-4 h-4 text-[#1447E6]" /> Early Risk Detection</span>
+              <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100"><CheckCircle2 className="w-4 h-4 text-[#1447E6]" /> Golden Hour Alerts</span>
+              <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100"><CheckCircle2 className="w-4 h-4 text-[#1447E6]" /> Doctor Recommendations</span>
+              <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100"><CheckCircle2 className="w-4 h-4 text-[#1447E6]" /> Multilingual Support</span>
             </motion.div>
           </motion.div>
           
@@ -64,30 +64,30 @@ const HomePage = () => {
   className="relative group"
 >
   {/* Outer Glow Effect - Modified to use your Brand Blue #1447E6 */}
-  <div className="absolute -inset-1 bg-gradient-to-r from-[#1447E6] to-cyan-400 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+  <div className="absolute -inset-1 bg-gradient-to-r from-[#1447E6]/30 to-cyan-400/30 rounded-[2.5rem] blur-xl opacity-50 group-hover:opacity-80 group-hover:blur-2xl transition duration-1000"></div>
   
-  <div className="relative bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 md:p-12 aspect-square flex items-center justify-center overflow-hidden shadow-2xl">
+  <div className="relative bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 aspect-square flex items-center justify-center overflow-hidden shadow-[0_0_50px_rgba(20,71,230,0.1)]">
     
     {/* Internal Animated Border Design */}
-    <div className="w-full h-full border-2 border-dashed border-slate-700/50 rounded-2xl flex flex-col items-center justify-center relative">
+    <div className="w-full h-full border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center relative bg-slate-50/50">
       
       {/* Background Pulse Circle */}
       <motion.div 
-        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+        animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.1, 0.05] }}
         transition={{ repeat: Infinity, duration: 3 }}
         className="absolute w-64 h-64 bg-[#1447E6] rounded-full blur-3xl -z-10"
       />
 
       {/* Main Heartbeat Icon */}
-      <Activity className="w-32 h-32 text-[#1447E6] animate-pulse drop-shadow-[0_0_15px_rgba(20,71,230,0.5)]" />
+      <Activity className="w-32 h-32 text-[#1447E6] animate-pulse drop-shadow-[0_0_15px_rgba(20,71,230,0.3)]" />
       
       {/* UI Elements for "Intelligence" Feel */}
       <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
         <div className="space-y-1">
           <div className="h-1 w-12 bg-[#1447E6] rounded-full" />
-          <div className="h-1 w-8 bg-slate-700 rounded-full" />
+          <div className="h-1 w-8 bg-slate-300 rounded-full" />
         </div>
-        <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+        <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-bold">
           Pulse_Monitor_V2
         </div>
       </div>
@@ -183,7 +183,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-8">
             <h2 className="text-4xl font-extrabold text-white">Golden Hour Emergency Detection</h2>
-            <p className="text-lg text-slate-300">LifeLine AI identifies stroke, cardiac events, severe infections, and other time-sensitive conditions.</p>
+            <p className="text-lg text-slate-300">Kenkoo AI identifies stroke, cardiac events, severe infections, and other time-sensitive conditions.</p>
             <div className="space-y-4">
               {['Triggers Emergency Alert', 'Displays Nearest Hospitals', 'Shows Ambulance Numbers', 'Recommends Immediate Action'].map((item, i) => (
                 <div key={i} className="flex items-center gap-3">
@@ -325,7 +325,7 @@ const HomePage = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-2">
               <Shield className="w-7 h-7 text-[#1447E6]" />
-              <span className="text-2xl font-black tracking-tighter">LifeLine AI</span>
+              <span className="text-2xl font-black tracking-tighter">Kenkoo AI</span>
             </div>
             <p className="text-slate-400 font-medium">Empowering Early Health Decisions with world-class medical intelligence.</p>
           </div>
@@ -351,8 +351,8 @@ const HomePage = () => {
 
           <div className="space-y-4">
              <h5 className="font-black text-slate-900 uppercase tracking-widest text-xs">Contact</h5>
-             <p className="text-slate-500 font-bold text-sm">support@lifelineai.com</p>
-             <p className="text-slate-400 text-xs mt-10 font-bold uppercase tracking-widest">© 2026 LifeLine AI – Empowering Early Health Decisions</p>
+             <p className="text-slate-500 font-bold text-sm">support@Kenkooai.com</p>
+             <p className="text-slate-400 text-xs mt-10 font-bold uppercase tracking-widest">© 2026 Kenkoo AI – Empowering Early Health Decisions</p>
           </div>
         </div>
       </footer>
