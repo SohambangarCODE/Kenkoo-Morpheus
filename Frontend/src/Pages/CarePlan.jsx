@@ -419,12 +419,12 @@ const CarePlan = () => {
         </div>
 
         {/* ── Category Filters ── */}
-        <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide mb-2">
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
+              className={`shrink-0 px-4 py-2 sm:px-6 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
                 selectedCategory === cat
                   ? "bg-blue-900 text-white shadow-md shadow-blue-900/10"
                   : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"

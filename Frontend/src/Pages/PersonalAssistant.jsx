@@ -79,7 +79,7 @@ const PersonalAssistant = () => {
       : "Hello there 👋";
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-slate-50 to-white pb-24 overflow-x-hidden">
+    <div className="relative bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 text-white py-10 sm:py-14 px-4 sm:px-6 overflow-hidden">
 
       {/* ── Hero Banner ─────────────────────────────────────────── */}
       <section className="relative px-6 pt-14 pb-12 overflow-hidden">
@@ -95,7 +95,7 @@ const PersonalAssistant = () => {
           className="absolute -bottom-10 -right-10 w-60 h-60 bg-violet-500 rounded-full blur-[120px]"
         />
 
-        <div className="relative max-w-4xl mx-auto text-center">
+        <div className="relative w-full max-w-sm sm:max-w-md mx-auto text-center">
           {/* Badge */}
           <motion.div
             custom={0} initial="hidden" animate="visible" variants={fadeUp}
@@ -108,18 +108,18 @@ const PersonalAssistant = () => {
           {/* Greeting */}
           <motion.h1
             custom={1} initial="hidden" animate="visible" variants={fadeUp}
-            className="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight mb-4"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4"
           >
             {greeting}
             <br />
-            <span className="bg-gradient-to-r from-[#1447E6] to-violet-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
               Meet Your AI Doctor Companion
             </span>
           </motion.h1>
 
           <motion.p
             custom={2} initial="hidden" animate="visible" variants={fadeUp}
-            className="text-lg text-slate-500 max-w-xl mx-auto leading-relaxed mb-10"
+            className="text-sm sm:text-base lg:text-xl text-slate-300 max-w-xl mx-auto leading-relaxed mb-8 sm:mb-10"
           >
             Your 24/7 personal health assistant that understands your records,
             analyses symptoms, and guides you with evidence-based insights.
@@ -130,25 +130,20 @@ const PersonalAssistant = () => {
             custom={3} initial="hidden" animate="visible" variants={fadeUp}
             className="relative max-w-2xl mx-auto"
           >
-            <div className="flex items-center gap-3 bg-white border-2 border-[#1447E6]/30 rounded-2xl px-5 py-4 shadow-xl shadow-[#1447E6]/10">
-              <Bot className="w-6 h-6 text-[#1447E6] flex-shrink-0" />
+            <div className="flex items-center gap-2 sm:gap-3 bg-white/10 border border-white/20 rounded-2xl px-4 sm:px-5 py-3 sm:py-4 shadow-xl backdrop-blur-md">
+              <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 flex-shrink-0" />
               <input
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
                 placeholder="Ask anything about your health…"
-                className="flex-1 bg-transparent outline-none text-slate-700 placeholder:text-slate-400 font-medium text-sm md:text-base"
+                className="flex-1 bg-transparent outline-none text-white placeholder:text-slate-400 font-medium text-sm md:text-base"
+                disabled
               />
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <button
-                  className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors flex items-center justify-center text-slate-500"
-                  title="Voice (coming soon)"
-                >
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                <button className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center text-slate-300">
                   <Mic className="w-4 h-4" />
                 </button>
-                <button
-                  className="w-9 h-9 rounded-xl bg-[#1447E6] hover:bg-blue-700 transition-colors flex items-center justify-center text-white"
-                  title="Send (coming soon)"
-                >
+                <button className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-500 hover:bg-blue-600 transition-colors flex items-center justify-center text-white">
                   <Send className="w-4 h-4" />
                 </button>
               </div>
@@ -156,7 +151,7 @@ const PersonalAssistant = () => {
 
             {/* "Coming Soon" overlay */}
             <div className="absolute inset-0 flex items-center justify-center z-10">
-              <div className="bg-white/80 backdrop-blur-sm border border-[#1447E6]/20 text-[#1447E6] text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-md pointer-events-none">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs lg:text-sm font-black uppercase tracking-widest px-4 sm:px-6 py-2 rounded-full shadow-lg pointer-events-none">
                 🔒 Launching Soon
               </div>
             </div>
@@ -181,11 +176,16 @@ const PersonalAssistant = () => {
       </section>
 
       {/* ── Divider ─────────────────────────────────────────────── */}
-      <div className="max-w-5xl mx-auto px-6">
-        <div className="flex items-center gap-4 my-4">
-          <div className="flex-1 h-px bg-slate-200" />
-          <span className="text-xs font-black text-slate-400 uppercase tracking-widest">What's Coming</span>
-          <div className="flex-1 h-px bg-slate-200" />
+      <div className="py-6 sm:py-8 px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">What You'll Be Able to Do</h2>
+            <div className="flex items-center gap-4 my-4">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-xs font-black text-slate-400 uppercase tracking-widest">What's Coming</span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+          </div>
         </div>
       </div>
 

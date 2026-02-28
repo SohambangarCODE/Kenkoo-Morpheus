@@ -8,15 +8,15 @@ const FloatingAssistant = () => {
   return (
     <>
       {/* Floating Button at Bottom Left */}
-      <div className="fixed bottom-6 left-6 z-40">
+      <div className="fixed bottom-6 left-4 sm:left-6 z-40">
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg shadow-blue-500/30 flex items-center justify-center hover:bg-blue-700 transition-colors"
+          className="bg-blue-600 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg shadow-blue-500/30 flex items-center justify-center hover:bg-blue-700 transition-colors"
           title="Open Assistant"
         >
-          <i className="ri-robot-2-fill text-2xl"></i>
+          <i className="ri-robot-2-fill text-xl sm:text-2xl"></i>
         </motion.button>
       </div>
 

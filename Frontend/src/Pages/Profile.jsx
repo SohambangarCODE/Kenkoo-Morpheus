@@ -182,7 +182,7 @@ const Profile = () => {
             </div>
 
             {/* Edit Button */}
-            <div className="mb-2 md:mb-2">
+            <div className="mb-2 md:mb-2 w-full md:w-auto flex justify-center md:justify-start">
               {!isEditing ? (
                 <motion.button 
                   onClick={() => setIsEditing(true)}
@@ -193,7 +193,7 @@ const Profile = () => {
                   <i className="ri-edit-line"></i> Edit Profile
                 </motion.button>
               ) : (
-                <div className="flex gap-2 sm:gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3 justify-center md:justify-start">
                   <motion.button 
                     onClick={handleCancel}
                     whileHover={{ scale: 1.05 }}

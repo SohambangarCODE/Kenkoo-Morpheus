@@ -260,16 +260,19 @@ const HealthAssistant = () => {
             <button
               key={i}
               onClick={() => { setDirection(i > step ? 1 : -1); setStep(i); }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+              className="flex-1 flex items-center justify-center gap-1.5"
+            >
+              <span className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
                 i === step
                   ? "bg-[#1447E6] text-white shadow-lg shadow-[#1447E6]/25"
                   : i < step
                   ? "bg-[#1447E6]/10 text-[#1447E6]"
                   : "bg-white text-slate-400 border border-slate-200"
-              }`}
-            >
-              {i < step ? <CheckCircle className="w-3.5 h-3.5" /> : s.icon}
-              <span className="hidden sm:inline">{s.label}</span>
+              }`}>
+                {i < step ? <CheckCircle className="w-3.5 h-3.5" /> : s.icon}
+              </span>
+              <span className="hidden sm:inline text-xs font-bold text-slate-700">{s.label}</span>
+              {i < 3 && <div className={`w-4 sm:w-8 h-0.5 rounded-full transition-all ${step > i + 1 ? 'bg-[#1447E6]' : 'bg-slate-200'}`} />}
             </button>
           ))}
         </div>
@@ -374,7 +377,7 @@ const StepSymptoms = ({ symptoms, setSymptoms, selectedSymptoms, toggleSymptom, 
     </div>
 
     {/* Language selector + Voice button */}
-    <div className="flex items-center gap-3">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
       <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-200">
         <Globe className="w-4 h-4 text-slate-400" />
         <select
@@ -1149,20 +1152,23 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
       {/* Header */}
       <div className="px-4 sm:px-6 pt-8 pb-4 max-w-5xl mx-auto">
         <motion.div initial="hidden" animate="visible" variants={fadeUp}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="inline-flex items-center gap-2 bg-[#1447E6]/10 text-[#1447E6] px-4 py-1.5 rounded-full text-xs font-bold">
-              <CheckCircle className="w-3.5 h-3.5" /> Analysis Complete
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900">Analysis Complete</h2>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
               <button
                 onClick={buildPDF}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#1447E6] to-violet-600 hover:from-blue-700 hover:to-violet-700 shadow-lg shadow-[#1447E6]/25 transition-all"
+                className="flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all flex-1 sm:flex-initial"
               >
-                <Download className="w-4 h-4" /> Download Report
+                <Download className="w-4 h-4" /> Download
               </button>
               <button
                 onClick={onReset}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 transition-all"
+                className="flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 bg-[#1447E6] text-white rounded-xl text-sm font-semibold hover:bg-[#0d3ab8] transition-all flex-1 sm:flex-initial"
               >
                 <RotateCcw className="w-4 h-4" /> New Analysis
               </button>
@@ -1277,7 +1283,7 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
                 <Activity className="w-5 h-5 text-blue-600" />
                 📊 Vitals Assessment
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
                 {[
                   { label: "Temperature", status: results.vitals_assessment.temperature_status, icon: <Thermometer className="w-4 h-4" /> },
                   { label: "Blood Pressure", status: results.vitals_assessment.bp_status, icon: <Heart className="w-4 h-4" /> },
@@ -1308,7 +1314,7 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
         )}
 
         {/* ── Doctor Recommendations + Nearby Clinics (side by side) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Doctor Specialties */}
           {results.recommended_specialties?.length > 0 && (
             <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4}>

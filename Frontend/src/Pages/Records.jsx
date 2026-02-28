@@ -297,12 +297,12 @@ const Records = () => {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
                 {["All", "Lab Report", "Prescription", "Scan", "Bill", "AI Report"].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setFilter(tab)}
-                        className={`px-2 py-2 sm:px-8 sm:py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
+                        className={`shrink-0 px-4 py-2 sm:px-6 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
                             filter === tab 
                             ? "bg-blue-900 text-white shadow-md shadow-blue-900/10" 
                             : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"

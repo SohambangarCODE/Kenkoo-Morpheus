@@ -2,11 +2,11 @@ import React from "react";
 
 function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-400 py-4 sm:py-6 md:py-8">
-      <div className="container-fluid px-3 sm:px-4">
-        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+    <footer className="bg-gray-900 text-gray-400 py-6 sm:py-8">
+      <div className="container-fluid px-4 sm:px-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Logo and Description */}
-          <div className="col-span-2 xs:col-span-2 sm:col-span-2 md:col-span-1 mb-3 sm:mb-4 md:mb-0">
+          <div className="col-span-2 lg:col-span-1 mb-2 sm:mb-0">
             <div className="flex items-center mb-1 sm:mb-2">
               <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-1.5 sm:mr-2">
                 <svg
