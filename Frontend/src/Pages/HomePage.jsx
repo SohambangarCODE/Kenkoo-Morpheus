@@ -114,7 +114,9 @@ const HomePage = () => {
                             >
                                 Start Smart Diagnosis <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </button>
-                            <button className="px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-bold text-sm sm:text-base border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all w-full sm:w-auto">
+                            <button onClick={()=>{
+                                document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                            }} className="px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-bold text-sm sm:text-base border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all w-full sm:w-auto">
                                 Learn How It Works
                             </button>
                         </motion.div>
@@ -196,7 +198,7 @@ const HomePage = () => {
                     </div>
                 </section >
 
-                {/* ðŸš¨ 5ï¸ âƒ£ EMERGENCY INTELLIGENCE */}
+                {/*EMERGENCY INTELLIGENCE */}
                 <section className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 w-full max-w-6xl" >
                     <div className="bg-[white] border border-red-500/20 rounded-2xl sm:rounded-[2rem] p-5 sm:p-8 lg:p-16 relative overflow-hidden flex flex-col lg:flex-row gap-8 lg:gap-16 items-center">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 blur-[100px]" />
@@ -237,7 +239,7 @@ const HomePage = () => {
                 
 
                 {/*HOW IT WORKS */}
-                <section className="py-8 sm:py-12 px-4 sm:px-6 w-full max-w-6xl" >
+                <section id="how-it-works" className="py-8 sm:py-12 px-4 sm:px-6 w-full max-w-6xl" >
                     <h2 className="text-lg sm:text-2xl font-black text-center mb-8 sm:mb-16 uppercase tracking-widest text-[#1447E6]">The Workflow</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-6">
                         {[
@@ -258,7 +260,7 @@ const HomePage = () => {
                     </div>
                 </section >
 
-                {/* ðŸ“ˆ 8ï¸ âƒ£ IMPACT SECTION */}
+                {/* IMPACT SECTION */}
                 <section className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 w-full text-center flex justify-center bg-[white]/30" >
                     <div className="max-w-4xl w-full space-y-8 sm:space-y-12">
                         <h2 className="text-xl sm:text-2xl lg:text-4xl font-extrabold text-slate-900">Designed to Reduce Delay Between Symptoms and Action</h2>
