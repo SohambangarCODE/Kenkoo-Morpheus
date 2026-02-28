@@ -1127,21 +1127,21 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-red-600 text-white px-6 py-4"
+          className="bg-red-600 text-white px-4 sm:px-6 py-4"
         >
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
-                <AlertTriangle className="w-6 h-6" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-full flex items-center justify-center animate-pulse flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <h3 className="font-extrabold text-lg">🚨 EMERGENCY DETECTED</h3>
-                <p className="text-red-100 text-sm">{results.emergency_message || "Seek immediate medical attention!"}</p>
+                <h3 className="font-extrabold text-base sm:text-lg">🚨 EMERGENCY DETECTED</h3>
+                <p className="text-red-100 text-xs sm:text-sm">{results.emergency_message || "Seek immediate medical attention!"}</p>
               </div>
             </div>
             <a
               href="tel:911"
-              className="flex items-center gap-2 bg-white text-red-600 font-extrabold px-6 py-3 rounded-xl shadow-lg hover:bg-red-50 transition-all sm:ml-auto"
+              className="w-full sm:w-auto flex justify-center items-center gap-2 bg-white text-red-600 font-extrabold px-6 py-3 rounded-xl shadow-lg hover:bg-red-50 transition-all sm:ml-auto"
             >
               <Phone className="w-5 h-5" /> Call Emergency (911)
             </a>
@@ -1187,13 +1187,13 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
         {/* ── Severity Badge ───────────────────────────────────────── */}
         <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={1}>
           <div className={`${severity.bg} ${severity.border} border rounded-2xl p-5 sm:p-6`}>
-            <div className="flex items-center gap-4">
-              <div className="text-4xl">{severity.emoji}</div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="text-3xl sm:text-4xl">{severity.emoji}</div>
               <div className="flex-1">
-                <h3 className={`text-xl font-extrabold ${severity.color}`}>
+                <h3 className={`text-lg sm:text-xl font-extrabold ${severity.color}`}>
                   Severity: {severity.label}
                 </h3>
-                <p className="text-sm text-slate-600 mt-1">{results.severity?.reasoning}</p>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">{results.severity?.reasoning}</p>
               </div>
               {results.severity?.score && (
                 <div className="hidden sm:flex flex-col items-center">
@@ -1412,7 +1412,7 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
                     transition={{ delay: i * 0.08 }}
                     className="flex items-start gap-3 bg-orange-50 border border-orange-200 rounded-xl p-4"
                   >
-                    <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center text-white font-extrabold flex-shrink-0 text-lg">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center text-white font-extrabold flex-shrink-0 text-base sm:text-lg">
                       {aid.icon || aid.step}
                     </div>
                     <div>
@@ -1458,16 +1458,6 @@ const ResultsPanel = ({ results, onReset, user, symptomsSummary }) => {
             </div>
           </motion.div>
         )}
-
-        {/* ── Disclaimer ───────────────────────────────────────────── */}
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={9}>
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center">
-            <p className="text-xs text-slate-400 leading-relaxed">
-              ⚠️ <strong>Disclaimer:</strong> This AI analysis is for informational purposes only and does NOT constitute medical advice.
-              Always consult a qualified healthcare professional for diagnosis and treatment. In case of emergency, call your local emergency number immediately.
-            </p>
-          </div>
-        </motion.div>
       </div>
     </div>
   );

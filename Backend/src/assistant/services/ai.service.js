@@ -134,9 +134,11 @@ IMPORTANT INSTRUCTIONS:
 3. Consider the patient's age, gender, and pre-existing conditions in your analysis.
 4. If uploaded document text is present, incorporate those findings.
 5. Be thorough but also practical — prioritize the most likely conditions.
-6. The response language should match: ${language || "English"}
+6. The response language should match: ${language || "English"}. You MUST translate all generated text values (descriptions, recommendations, summaries) into this language.
+7. CRITICAL: Use simple, everyday words that a common person can understand instead of complex medical jargon, especially for normal/common diseases (e.g., use "Common Cold" instead of "Acute Viral Rhinopharyngitis").
 
-You MUST return ONLY valid JSON (no markdown, no backticks, no explanation outside JSON) with this EXACT structure:
+You MUST return ONLY valid JSON (no markdown, no backticks, no explanation outside JSON).
+CRITICAL RULE: While the VALUES of the JSON should be in the requested language (${language || "English"}), the KEYS of the JSON MUST remain EXACTLY as shown in English below.
 
 {
   "possible_diseases": [

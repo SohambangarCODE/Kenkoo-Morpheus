@@ -35,13 +35,13 @@ const HomePage = () => {
                     <div className="hidden sm:flex items-center gap-4 sm:gap-6">
                         <button
                             onClick={() => navigate('/login')}
-                            className="text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors"
+                            className="bg-[#1447E6] hover:bg-blue-900 text-[white] px-4 sm:px-5 py-2 rounded-full font-bold text-sm transition-all flex items-center"
                         >
                             Sign In
                         </button>
                         <button
                             onClick={() => navigate('/login')}
-                            className="bg-[#1447E6] hover:bg-[#04bd75] text-[white] px-4 sm:px-5 py-2 rounded-full font-bold text-sm transition-all flex items-center gap-2"
+                            className="bg-[#1447E6] hover:bg-blue-900 text-[white] px-4 sm:px-5 py-2 rounded-full font-bold text-sm transition-all flex items-center"
                         >
                             Get Started <ChevronRight className="w-4 h-4" />
                         </button>
