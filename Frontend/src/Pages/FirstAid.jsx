@@ -477,7 +477,7 @@ const FirstAid = () => {
             </div>
             <div>
               <p className="font-extrabold text-sm">Call Emergency</p>
-              <p className="text-red-200 text-xs">Dial 911</p>
+              <p className="text-red-200 text-xs">Dial +16183607978</p>
             </div>
           </a>
           <a
@@ -489,7 +489,7 @@ const FirstAid = () => {
             </div>
             <div>
               <p className="font-extrabold text-sm">Poison Control</p>
-              <p className="text-violet-200 text-xs">1-800-222-1222</p>
+              <p className="text-violet-200 text-xs">1800-425-1213</p>
             </div>
           </a>
           <div
