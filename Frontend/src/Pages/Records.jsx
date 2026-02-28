@@ -271,9 +271,9 @@ const Records = () => {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8 min-h-screen flex flex-col">
         
         {/* Header */}
-        <div className="mb-6 bg-blue-900 text-white p-6 sm:p-8 rounded-3xl relative overflow-hidden shadow-lg">
+        <div className="mb-6 bg-blue-900 text-white p-5 sm:p-8 rounded-3xl relative overflow-hidden shadow-lg">
            <div className="relative z-10">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">My Records</h1>
+              <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2 text-balance leading-tight">My Records</h1>
               <p className="text-blue-100 text-sm sm:text-base opacity-90">All your medical records, organized for life.</p>
            </div>
            {/* Decorative circles */}
@@ -337,16 +337,16 @@ const Records = () => {
                                 <div 
                                     key={record._id} 
                                     onClick={() => handleViewFile(record)}
-                                    className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4 group cursor-pointer"
+                                    className="bg-white p-3 sm:p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex items-center gap-3 sm:gap-4 group cursor-pointer"
                                 >
                                     {/* Icon */}
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 ${getColor(record.type)}`}>
+                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 ${getColor(record.type)}`}>
                                         <i className={getIcon(record.type)}></i>
                                     </div>
                                     
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="font-semibold text-gray-800 truncate">{record.fileName || record.title}</h4>
+                                        <h4 className="font-semibold text-gray-800 text-sm sm:text-base truncate">{record.fileName || record.title}</h4>
                                         <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-0.5">
                                             <span className="truncate max-w-[120px]">{record.provider}</span>
                                             <span className="w-1 h-1 rounded-full bg-gray-300"></span>

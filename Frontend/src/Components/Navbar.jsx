@@ -89,21 +89,21 @@ function Navbar() {
       <div className="container-fluid mx-auto">
         <div className="flex items-center justify-between py-4">
           {/* Logo and Brand */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <Link to="/app/personalassistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center">
+          <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
+            <Link to="/app/personalassistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0">
               <img
                 src="/logo.png-removebg-preview.png"
                 alt="Kenkoo logo"
-                className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105"
+                className="w-8 h-8 sm:w-12 sm:h-12 object-cover rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105"
               />
             </Link>
-            <div className="font-bold text-2xl sm:text-3xl md:text-4xl text-[#05395e]">
+            <div className="font-bold text-xl sm:text-3xl md:text-4xl text-[#05395e] tracking-tight">
               Kenkoo
             </div>
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden shrink-0">
             <button
               onClick={toggleMenu}
               className="relative flex flex-col justify-center gap-2 w-6 h-4 sm:w-8 sm:h-6 focus:outline-none group"

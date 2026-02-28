@@ -274,19 +274,19 @@ const ClinicCard = ({ clinic, userLocation, index }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
+        <div className="flex flex-col xs:flex-row sm:flex-row gap-2 mt-4">
           <a
             href={directionsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 active:scale-95 shadow-md shadow-blue-600/20"
+            className="flex-1 flex items-center justify-center gap-1.5 py-3 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 active:scale-95 shadow-md shadow-blue-600/20"
           >
             <i className="ri-direction-line" />
             Get Directions
           </a>
           <a
             href={`tel:${clinic.phone.replace(/\s/g, "")}`}
-            className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs sm:text-sm font-bold rounded-xl transition-colors border border-emerald-200"
+            className="flex-1 xs:flex-none flex items-center justify-center gap-1.5 px-4 py-3 sm:py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs sm:text-sm font-bold rounded-xl transition-colors border border-emerald-200"
           >
             <i className="ri-phone-fill" />
             Call
@@ -365,11 +365,11 @@ const CarePlan = () => {
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-400 rounded-full blur-2xl opacity-15 -ml-5 -mb-5" />
 
           <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-3">
-              <img className="w-10 h-10" src="logo.png-removebg-preview.png" alt="" />
-              <span className="font-bold text-lg tracking-wide">Kenkoo</span>
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <img className="w-8 h-8 sm:w-10 sm:h-10" src="logo.png-removebg-preview.png" alt="" />
+              <span className="font-bold text-base sm:text-lg tracking-wide">Kenkoo</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Doctor Connect</h1>
+            <h1 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-2 text-balance">Doctor Connect</h1>
             <p className="text-blue-100 text-sm sm:text-base opacity-90 max-w-lg">
               Find nearby hospitals, clinics & pharmacies — get directions, call, and navigate in one tap.
             </p>
